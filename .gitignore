@@ -1,0 +1,9 @@
+*.out
+CMakeCache.txt
+CMakeFiles
+Makefile
+test
+cmake_install.cmake
+hypergraph/*.u
+matrix/*.mtx
+bin/*
