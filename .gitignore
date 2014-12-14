@@ -6,4 +6,5 @@ test
 cmake_install.cmake
 hypergraph/*.u
 matrix/*.mtx
+matrix/*.tar.gz
 bin/*

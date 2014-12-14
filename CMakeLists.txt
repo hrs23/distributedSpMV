@@ -23,3 +23,11 @@ ADD_EXECUTABLE(${TARGET} ${SOURCE})
 TARGET_LINK_LIBRARIES(${TARGET} ${LIBRARY})
 
 
+
+# TARGET = matrix2hypergraph
+SET(TARGET matrix2hypergraph)
+SET(SOURCE src/matrix2hypergraph.cpp)
+ADD_EXECUTABLE(${TARGET} ${SOURCE})
+
+
+
