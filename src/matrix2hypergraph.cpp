@@ -67,22 +67,33 @@ int main(int argc, char *argv[])
         nets[elements[i].col].push_back(elements[i].row);
         weight[elements[i].row]++;
     }
+    int nCell = nRow;
+    int nPin = nNnz;
+    int nNet = 0;
+    for (int i = 0; i < nCol; i++) {
+        if (nets[i].size()) {
+            nNet++;
+        }
+    }
+
     ofstream ofs(hypergraphFile);
-    ofs << 0    << " "  // base
-        << nRow << " "  // |V|
-        << nCol << " "  // |N|
-        << nNnz << " "  // |pins|
+    ofs << 1    << " "  // base
+        << nCell << " "  // |V|
+        << nNet << " "  // |N|
+        << nPin << " "  // |pins|
         << 1    << " "  // each cell has weight
         << endl;
-        
+
     for (size_t i = 0; i < nets.size(); i++) {
-        for (size_t j = 0; j < nets[i].size(); j++) {
-            if (j) ofs << " ";
-            ofs << nets[i][j];
+        if (nets[i].size()) {
+            for (size_t j = 0; j < nets[i].size(); j++) {
+                if (j) ofs << " ";
+                ofs << nets[i][j] + 1;
+            }
+            ofs << endl;
         }
-        ofs << endl;
     }
-    for (int i = 0; i < nRow; i++) {
+    for (int i = 0; i < nCell; i++) {
         if (i) ofs << " ";
         ofs << weight[i];
     }
