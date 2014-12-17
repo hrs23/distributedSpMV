@@ -1,6 +1,10 @@
 #pragma once
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <cassert>
 #include <mpi.h>
+#include "sparse_matrix.h"
 using namespace std;
 
 void PrintHostName () {
@@ -12,4 +16,15 @@ void PrintHostName () {
     MPI_Get_processor_name(hostname, &namelen);
     fprintf(stderr, "%d/%d %s\n", rank, size, hostname);
     fflush(stderr);
+}
+
+
+void LoadSparseMatrix (const string &partFile, SparseMatrix &A) {
+    ifstream ifs(partFile);
+    int nRow, nCol, nNnz;
+    ifs >> nRow >> nCol >> nNnz;
+    assert(nRow == nCol);
+    A.globalNumberOfRows = nRow;
+    A.globalNumberOfNonzeros = nNnz;
+    
 }

@@ -14,7 +14,7 @@
 using namespace std;
 int main(int argc, char *argv[])
 {
-    if (argc < 4) {
+    if (argc != 4) {
         fprintf(stderr, "Usage: %s <input matrix file> <number of parts> <output partition directory>\n", argv[0]);
         exit(1);
     }
