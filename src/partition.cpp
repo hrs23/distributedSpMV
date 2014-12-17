@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
                 needCol.insert(col);
             }
         }
-        vector<int> sendCol = part2idx[p];
+        vector<int> &sendCol = part2idx[p];
         vector<int> recvCol;
         {
             set<int> colSet;
@@ -156,23 +156,27 @@ int main(int argc, char *argv[])
             }
         }
         map<int, int> global2local;
+        const int externalOffset = sendCol.size();
         for (auto it = needCol.begin(); it != needCol.end(); it++) {
-            auto pos = lower_bound(sendCol.begin(), sendCol.end(), *it);
-            if (pos != sendCol.end()) {
-                global2local[*it] = pos-sendCol.begin();
+            if (binary_search(sendCol.begin(), sendCol.end(), *it)) {
+                int pos = lower_bound(sendCol.begin(), sendCol.end(), *it) - sendCol.begin();
+                global2local[*it] = pos;
             } else {
-                pos = lower_bound(recvCol.begin(), recvCol.end(), *it);
-                global2local[*it] = pos - recvCol.begin();
+                int pos = lower_bound(recvCol.begin(), recvCol.end(), *it) - recvCol.begin();
+                global2local[*it] = pos + externalOffset;
             }
         }
         int nSendNeighbors = 0, nRecvNeighbors = 0;
+        int nSendElements = 0, nRecvElements = 0;
         for (int i = 0; i < nCell; i++) {
             if (sendElements[i].size()) nSendNeighbors++;
             if (recvElements[i].size()) nRecvNeighbors++;
+            nSendElements += sendElements[i].size();
+            nRecvElements += recvElements[i].size();
         }
-        ofs << nSendNeighbors << " " << nRecvNeighbors << endl;
 
         ofs << "#Send" << endl;
+        ofs << nSendNeighbors << " " << nSendElements << endl;
         for (int i = 0; i < sendElements.size(); i++) {
             if (sendElements[i].size()) {
                 ofs << i << " " << sendElements[i].size();
@@ -183,6 +187,7 @@ int main(int argc, char *argv[])
             }
         }
         ofs << "#Recv" << endl;
+        ofs << nRecvNeighbors << " " << nRecvElements << endl;
         for (int i = 0; i < recvElements.size(); i++) {
             if (recvElements[i].size()) {
                 ofs << i << " " << recvElements[i].size();
