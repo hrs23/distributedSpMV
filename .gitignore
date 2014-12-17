@@ -8,3 +8,4 @@ hypergraph/*.u
 matrix/*.mtx
 matrix/*.tar.gz
 bin/*
+partition/*
