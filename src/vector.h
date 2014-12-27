@@ -2,6 +2,6 @@
 struct Vector {
     int localLength;
     int externalLength;
-    double *value;
+    double *values;
     void *optimizationData;
 };

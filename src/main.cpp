@@ -30,12 +30,9 @@ int main (int argc, char *argv[]) {
     string  partFile = string(argv[1]) + "-" + to_string(static_cast<long long>(size)) + "-" + to_string(static_cast<long long>(rank)) + ".part"; 
     if (rank == 0) cerr << "Now: LoadSparseMatrix" << endl;
     SparseMatrix A;
-    LoadSparseMatrix(partFile, A);
-    /*
     Vector x, y;
-
-    if (rank == 0) cerr << "Now: OptimizeProblem" << endl;
-    OptimizeProblem(A, x, y);
+    LoadInput(partFile, A, x);
+    CreateZeroVector(y, A.localNumberOfRows);
 
     //==============================
     // SpMV
@@ -43,6 +40,7 @@ int main (int argc, char *argv[]) {
     if (rank == 0) cerr << "Now: ComputeSPMV" << endl;
     ComputeSPMV(A, x, y);
 
+    /*
     //==============================
     // DELETE
     //==============================

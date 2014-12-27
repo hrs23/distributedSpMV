@@ -104,6 +104,12 @@ int main(int argc, char *argv[])
         // 保持する行番号
         //----------------------------------------------------------------------
         ofs << "#Partitioning" << endl;
+        for (int i = 0; i < nCell; i++) {
+            if (i) ofs << " ";
+            ofs << idx2part[i];
+        }
+        ofs << endl;
+        /*
         for (int i = 0; i < nPart; i++) {
             ofs << part2idx[i].size();
             for (int j = 0; j < part2idx[i].size(); j++) {
@@ -111,13 +117,27 @@ int main(int argc, char *argv[])
             }
             ofs << endl;
         }
+        */
 
+        //----------------------------------------------------------------------
+        // インデックスの作成 
+        // グローバルな行番号 -> ローカルな行番号に変換
+        // 特に通信の必要ない要素を前に持ってくる（キャッシュのため）
+        //----------------------------------------------------------------------
 
         //----------------------------------------------------------------------
         // 保持する部分行列
         //----------------------------------------------------------------------
         // row col val
+        sort(elements.begin(), elements.end(), RowComparator());
         ofs << "#SubMatrix" << endl;
+        int numLocalNnz;
+        for (int i = 0; i < elements.size(); i++) {
+            if (idx2part[elements[i].row] == p) {
+                numLocalNnz++;
+            }
+        }
+        ofs << numLocalNnz << endl;
         for (int i = 0; i < elements.size(); i++) {
             if (idx2part[elements[i].row] == p) {
                 ofs << elements[i].row << " " << elements[i].col << " " << elements[i].val << endl;

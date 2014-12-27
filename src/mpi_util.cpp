@@ -22,9 +22,19 @@ void PrintHostName () {
 void LoadSparseMatrix (const string &partFile, SparseMatrix &A) {
     ifstream ifs(partFile);
     int nRow, nCol, nNnz;
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
     ifs >> nRow >> nCol >> nNnz;
     assert(nRow == nCol);
     A.globalNumberOfRows = nRow;
     A.globalNumberOfNonzeros = nNnz;
-    
+    A.assign = new int[nRow];
+    for (int i = 0; i < nRow; i++) ifs >> A.assign[i];
+    int numLocalNnz;
+    ifs >> numLocalNnz;
+    A.localNumberOfNonzeros = numLocalNnz;
+    A.values = new double[numLocalNnz];
+    A.localIndices = new double[numLocalNnz];
+    A.globalIndices = new double[numLocalNnz];
 }
