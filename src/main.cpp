@@ -7,7 +7,7 @@
 #include "sparse_matrix.h"
 #include "vector.h"
 #include "spmv.h"
-#include "util.hpp"
+#include "util.h"
 #include "mpi_util.hpp"
 using namespace std;
 int main (int argc, char *argv[]) {

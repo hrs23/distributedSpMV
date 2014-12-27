@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
-#include "util.hpp"
+#include "util.h"
 #include "patoh.h"
 
 using namespace std;
@@ -120,29 +120,25 @@ int main(int argc, char *argv[])
         */
 
         //----------------------------------------------------------------------
-        // インデックスの作成 
-        // グローバルな行番号 -> ローカルな行番号に変換
-        // 特に通信の必要ない要素を前に持ってくる（キャッシュのため）
-        //----------------------------------------------------------------------
-
-        //----------------------------------------------------------------------
         // 保持する部分行列
         //----------------------------------------------------------------------
         // row col val
-        sort(elements.begin(), elements.end(), RowComparator());
         ofs << "#SubMatrix" << endl;
-        int numLocalNnz;
-        for (int i = 0; i < elements.size(); i++) {
-            if (idx2part[elements[i].row] == p) {
-                numLocalNnz++;
-            }
-        }
-        ofs << numLocalNnz << endl;
-        for (int i = 0; i < elements.size(); i++) {
-            if (idx2part[elements[i].row] == p) {
-                ofs << elements[i].row << " " << elements[i].col << " " << elements[i].val << endl;
-            }
-        }
+        sort(elements.begin(), elements.end(), RowComparator());
+        int localNumberOfRows = count(idx2part, idx2part+nCell, p);
+        int numInternalNnz = count_if(elements.begin(), elements.end(), 
+                [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] == p; });
+        int numExterrnalNnz = count_if(elements.begin(), elements.end(), 
+                [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] != p; });
+        ofs << localNumberOfRows << " " << numInternalNnz + numExternalNnz << " " << numInternalNnz << " " << numExternalNnz << endl;
+        for_each(elements.begin(), elements.end(), 
+                [&](const Elements &e){ if (idx2part[e.row] == p && idx2part[e.col] == p) 
+                ofs << elements[i].row << " " << elements[i].col << " " << elements[i].val << endl; 
+                });
+        for_each(elements.begin(), elements.end(), 
+                [&](const Elements &e){ if (idx2part[e.row] == p && idx2part[e.col] != p) 
+                ofs << elements[i].row << " " << elements[i].col << " " << elements[i].val << endl; 
+                });
 
         //----------------------------------------------------------------------
         // 通信 
@@ -186,6 +182,7 @@ int main(int argc, char *argv[])
                 global2local[*it] = pos + externalOffset;
             }
         }
+
         int nSendNeighbors = 0, nRecvNeighbors = 0;
         int nSendElements = 0, nRecvElements = 0;
         for (int i = 0; i < nCell; i++) {
@@ -194,6 +191,18 @@ int main(int argc, char *argv[])
             nSendElements += sendElements[i].size();
             nRecvElements += recvElements[i].size();
         }
+        vector<int> local2global(needCol.size());
+        for (auto it = global2local.begin(); it != global2local.end(); it++) {
+            local2global[it->second] = it->first;
+        }
+        ofs << "#LocalToGlobalTable" << endl;
+        ofs << needCol.size() << endl;
+        for (int i = 0; i < needCol.size(); i++) {
+            if (i) cout << " ";
+            ofs << local2global[i];
+        }
+        ofs << endl;
+
 
         ofs << "#Send" << endl;
         ofs << nSendNeighbors << " " << nSendElements << endl;
@@ -217,15 +226,6 @@ int main(int argc, char *argv[])
                 ofs << endl;
             }
         }
-        /*
-           for (int i = 0; i < nCell;
-           if (src != p && dst == p) {
-           recv[src].push_back(
-           lower_bound(part2idx[p].begin(), part2idx.end(), col) - 
-           part2idx[p].begin());
-           }
-           */
-
         ofs.close();
     }
 

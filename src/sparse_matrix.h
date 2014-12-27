@@ -1,11 +1,22 @@
 #pragma once
 struct SparseMatrix {
     int *assign;
-
     int globalNumberOfRows;
-    int localNumberOfRows;
     int globalNumberOfNonzeros;
+    int localNumberOfRows;
     int localNumberOfNonzeros;
+    //==============================
+    // Asynchronous Communication
+    //==============================
+    int *internalPtr;
+    int *internalIdx;
+    double *internalVal;
+    int *externalPtr;
+    int *externalIdx;
+    double *externalVal;
+
+    int totalNumberOfUsedCol;
+    int *local2global;
 
     int numberOfSendNeighbors;
     int numberOfRecvNeighbors;    
@@ -17,22 +28,6 @@ struct SparseMatrix {
     int totalNumberOfSend;
     int totalNumberOfRecv;
     int *localIndexOfSend;
-    int *localindexOfRecv;
+    int *localIndexOfRecv;
     double *sendBuffer;
-
-    //==============================
-    // Asynchronous Communication
-    //==============================
-    int *localPtr;
-    int *localIdx;
-    double *localVal;
-    int *externalPtr;
-    int *externalIdx;
-    double *externalVal;
-
-    //==============================
-    // Multithread MPI call
-    //==============================
-    int *sendPointer;
-    int *recvPointer;
 };
