@@ -110,14 +110,14 @@ int main(int argc, char *argv[])
         }
         ofs << endl;
         /*
-        for (int i = 0; i < nPart; i++) {
-            ofs << part2idx[i].size();
-            for (int j = 0; j < part2idx[i].size(); j++) {
-                ofs << " " << part2idx[i][j];
-            }
-            ofs << endl;
-        }
-        */
+           for (int i = 0; i < nPart; i++) {
+           ofs << part2idx[i].size();
+           for (int j = 0; j < part2idx[i].size(); j++) {
+           ofs << " " << part2idx[i][j];
+           }
+           ofs << endl;
+           }
+           */
 
         //----------------------------------------------------------------------
         // 保持する部分行列
@@ -128,57 +128,57 @@ int main(int argc, char *argv[])
         int localNumberOfRows = count(idx2part, idx2part+nCell, p);
         int numInternalNnz = count_if(elements.begin(), elements.end(), 
                 [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] == p; });
-        int numExterrnalNnz = count_if(elements.begin(), elements.end(), 
+        int numExternalNnz = count_if(elements.begin(), elements.end(), 
                 [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] != p; });
         ofs << localNumberOfRows << " " << numInternalNnz + numExternalNnz << " " << numInternalNnz << " " << numExternalNnz << endl;
         for_each(elements.begin(), elements.end(), 
-                [&](const Elements &e){ if (idx2part[e.row] == p && idx2part[e.col] == p) 
-                ofs << elements[i].row << " " << elements[i].col << " " << elements[i].val << endl; 
+                [&](const Element &e){ if (idx2part[e.row] == p && idx2part[e.col] == p) 
+                ofs << e.row << " " << e.col << " " << e.val << endl; 
                 });
         for_each(elements.begin(), elements.end(), 
-                [&](const Elements &e){ if (idx2part[e.row] == p && idx2part[e.col] != p) 
-                ofs << elements[i].row << " " << elements[i].col << " " << elements[i].val << endl; 
+                [&](const Element &e){ if (idx2part[e.row] == p && idx2part[e.col] != p) 
+                ofs << e.row << " " << e.col << " " << e.val << endl; 
                 });
 
         //----------------------------------------------------------------------
         // 通信 
         //----------------------------------------------------------------------
         ofs << "#Communication" << endl;
-        vector< set<int> > sendElements(nCell);
-        vector< set<int> > recvElements(nCell);
-        set<int> needCol;
+        vector< set<int> > sendElements(nCell); // global index of column
+        vector< set<int> > recvElements(nCell); // global index of column
         for (int i = 0; i < elements.size(); i++) {
             int row = elements[i].row;
             int col = elements[i].col;
             int src = idx2part[col], dst = idx2part[row];
             if (src == p && dst != p) {
                 sendElements[dst].insert(col);
-                needCol.insert(col);
             }
             if (src != p && dst == p) {
                 recvElements[src].insert(col);
-                needCol.insert(col);
             }
         }
-        vector<int> &sendCol = part2idx[p];
-        vector<int> recvCol;
+        vector<int> internalCol = part2idx[p];
+        vector<int> externalCol;
         {
-            set<int> colSet;
             for (int i = 0; i < nCell; i++) {
                 for (auto it = recvElements[i].begin(); it != recvElements[i].end(); it++) {
-                    colSet.insert(*it);
+                    externalCol.push_back(*it);
                 }
-                recvCol = vector<int>(colSet.begin(), colSet.end());
             }
         }
+        set<int> allCol;
+        for_each(internalCol.begin(), internalCol.end(), [&](int c){ allCol.insert(c); });
+        for_each(externalCol.begin(), externalCol.end(), [&](int c){ allCol.insert(c); });
+
+        // allCol == internalCol + externalCol
         map<int, int> global2local;
-        const int externalOffset = sendCol.size();
-        for (auto it = needCol.begin(); it != needCol.end(); it++) {
-            if (binary_search(sendCol.begin(), sendCol.end(), *it)) {
-                int pos = lower_bound(sendCol.begin(), sendCol.end(), *it) - sendCol.begin();
+        const int externalOffset = internalCol.size();
+        for (auto it = allCol.begin(); it != allCol.end(); it++) {
+            if (binary_search(internalCol.begin(), internalCol.end(), *it)) {
+                int pos = lower_bound(internalCol.begin(), internalCol.end(), *it) - internalCol.begin();
                 global2local[*it] = pos;
             } else {
-                int pos = lower_bound(recvCol.begin(), recvCol.end(), *it) - recvCol.begin();
+                int pos = lower_bound(externalCol.begin(), externalCol.end(), *it) - externalCol.begin();
                 global2local[*it] = pos + externalOffset;
             }
         }
@@ -191,14 +191,14 @@ int main(int argc, char *argv[])
             nSendElements += sendElements[i].size();
             nRecvElements += recvElements[i].size();
         }
-        vector<int> local2global(needCol.size());
+        vector<int> local2global(allCol.size());
         for (auto it = global2local.begin(); it != global2local.end(); it++) {
             local2global[it->second] = it->first;
         }
         ofs << "#LocalToGlobalTable" << endl;
-        ofs << needCol.size() << endl;
-        for (int i = 0; i < needCol.size(); i++) {
-            if (i) cout << " ";
+        ofs << allCol.size() << endl;
+        for (int i = 0; i < allCol.size(); i++) {
+            if (i) ofs << " ";
             ofs << local2global[i];
         }
         ofs << endl;

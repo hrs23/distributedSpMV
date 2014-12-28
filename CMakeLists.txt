@@ -18,7 +18,10 @@ LINK_DIRECTORIES(${LIBRARY_PATH})
 
 # TARGET = partition
 SET(TARGET partition)
-SET(SOURCE src/partition.cpp)
+SET(SOURCE  
+    src/partition.cpp
+    src/util.cpp
+    )
 SET(LIBRARY patoh)
 ADD_EXECUTABLE(${TARGET} ${SOURCE})
 TARGET_LINK_LIBRARIES(${TARGET} ${LIBRARY})
