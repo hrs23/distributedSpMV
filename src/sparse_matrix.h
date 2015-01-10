@@ -15,7 +15,7 @@ struct SparseMatrix {
     int *externalIdx;
     double *externalVal;
 
-    int totalNumberOfUsedCol;
+    int totalNumberOfUsedCols;
     int *local2global;
 
     int numberOfSendNeighbors;

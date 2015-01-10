@@ -82,9 +82,10 @@ int main(int argc, char *argv[])
     PaToH_Initialize_Parameters(&params, PATOH_CONPART, PATOH_SUGPARAM_DEFAULT);
     params._k = nPart;
     int cutsize;
+    cerr << "Alloc " << nCell << " " << nNet << " " << nConst << endl;
+    PaToH_Alloc(&params, nCell, nNet, nConst, weights, costs, xpins, pins);
     int *idx2part = new int[nCell];
     int *partweights = new int[params._k * nConst];
-    PaToH_Alloc(&params, nCell, nNet, nConst, weights, costs, xpins, pins);
     PaToH_Part(&params, nCell, nNet, nConst, 0, weights, costs, xpins, pins, NULL, idx2part, partweights, &cutsize);
 
     vector< vector<int> > part2idx(nPart);
@@ -99,6 +100,7 @@ int main(int argc, char *argv[])
             + to_string(static_cast<long long>(p)) + ".part";
         cout << dir + "/" + file << endl;
         ofstream ofs(dir + "/" + file);
+        ofs << "#Matrix" << endl;
         ofs << nRow << " " << nCol << " " << nNnz << " " << nPart << " " << GetBasename(argv[1]) << endl;
         //----------------------------------------------------------------------
         // 保持する行番号
@@ -130,7 +132,9 @@ int main(int argc, char *argv[])
                 [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] == p; });
         int numExternalNnz = count_if(elements.begin(), elements.end(), 
                 [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] != p; });
-        ofs << localNumberOfRows << " " << numInternalNnz + numExternalNnz << " " << numInternalNnz << " " << numExternalNnz << endl;
+
+        ofs << localNumberOfRows << " " << numInternalNnz << " " << numExternalNnz << endl;
+
         for_each(elements.begin(), elements.end(), 
                 [&](const Element &e){ if (idx2part[e.row] == p && idx2part[e.col] == p) 
                 ofs << e.row << " " << e.col << " " << e.val << endl; 
@@ -228,7 +232,6 @@ int main(int argc, char *argv[])
         }
         ofs.close();
     }
-
     delete [] idx2part;
     delete [] partweights;
     PaToH_Free();

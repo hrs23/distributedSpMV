@@ -1,8 +1,10 @@
 #include <mpi.h>
+#include <iostream>
 #include "spmv.h"
 #include "sparse_matrix.h"
-#include "optimize_problem.h"
 #include "vector.h"
+#include "spmv_kernel.h"
+using namespace std;
 int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	int size, rank;
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -11,8 +13,9 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	//==============================
 	// Packing
 	//==============================
+    double *sendBuffer = A.sendBuffer;
 #pragma omp for
-	for (int i = 0; i < A.totalNumberOfSend; i++) A.sendBuffer[i] = xv[A.localIndexOfSend[i]];
+	for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
 	//==============================
 	// Begin Asynchronouse Communication
 	//==============================
@@ -20,7 +23,7 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	MPI_Request *recvRequest = new MPI_Request[A.numberOfRecvNeighbors];
 	MPI_Request *sendRequest = new MPI_Request[A.numberOfSendNeighbors];
 	double *x_external = (double *) xv + A.localNumberOfRows;
-	for (int i = 0; i < A.numberOfReceiveNeighbors; i++) {
+	for (int i = 0; i < A.numberOfRecvNeighbors; i++) {
 		int nRecv = A.recvLength[i];
         int src = A.recvNeighbors[i];
 		MPI_Irecv(x_external, nRecv, MPI_DOUBLE, src, MPI_MY_TAG, MPI_COMM_WORLD, recvRequest+i);
@@ -33,10 +36,10 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 		sendBuffer += nSend;
 	}
 	//==============================
-	// Compute Local
+	// Compute Internal
 	//==============================
 	{
-		SpMVLocal(A, x, y);
+		SpMVInternal(A, x, y);
 	}
 	//==============================
 	// Wait Asynchronous Communication
@@ -54,7 +57,6 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	{
 		SpMVExternal(A, x, y);
 	}
-	//==============================
 	MPI_Barrier(MPI_COMM_WORLD);
 	delete [] recvRequest;
 	delete [] sendRequest;

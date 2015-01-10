@@ -1,4 +1,4 @@
-//#include <mpi.h>
+#include <mpi.h>
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
@@ -8,19 +8,20 @@
 #include "vector.h"
 #include "spmv.h"
 #include "util.h"
-#include "mpi_util.hpp"
+#include "mpi_util.h"
 using namespace std;
 int main (int argc, char *argv[]) {
-    cerr << "Now: Init" << endl;
-    MPI_Init(&argc, &argv);
     if (argc != 2) {
         printf("Usage: %s <prefix of part file (i.e. 'partition/test.mtx')>\n", argv[0]);
         exit(1);
     }
 
-    //==============================
+    cerr << "Now: Init" << endl;
+    MPI_Init(&argc, &argv);
+
+    //------------------------------
     // INIT
-    //==============================
+    //------------------------------
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -34,33 +35,40 @@ int main (int argc, char *argv[]) {
     LoadInput(partFile, A, x);
     CreateZeroVector(y, A.localNumberOfRows);
 
-    //==============================
+    //------------------------------
     // SpMV
-    //==============================
+    //------------------------------
     if (rank == 0) cerr << "Now: ComputeSPMV" << endl;
-    ComputeSPMV(A, x, y);
+    SpMV(A, x, y);
 
-    /*
-    //==============================
+    //------------------------------
     // DELETE
-    //==============================
+    //------------------------------
     if (rank == 0) cerr << "Now: Delete A, x" << endl;
     DeleteSparseMatrix(A);
     DeleteVector(x);
 
+    //------------------------------
+    // Verify
+    //------------------------------
+    PrintResult(A, y);
+    if (rank == 0) cerr << "Now: Verify" << endl;
 
-    //==============================
+
+    //------------------------------
     // DELETE
-    //==============================
+    //------------------------------
     if (rank == 0) cerr << "Now: Delete y" << endl;
     DeleteVector(y);
 
-    //============================== 
+
+    
+
+    //------------------------------
     // REPORT
-    //==============================
+    //------------------------------
     if (rank == 0) cerr << "Now: Finalize" << endl;
     MPI_Finalize();
     if (rank == 0) cerr << "Complete!!" << endl;
-    */
     return 0;
 }

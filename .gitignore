@@ -9,3 +9,4 @@ matrix/*.mtx
 matrix/*.tar.gz
 bin/*
 partition/*.part
+test/
