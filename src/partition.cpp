@@ -140,32 +140,9 @@ int main(int argc, char *argv[])
            */
 
         //----------------------------------------------------------------------
-        // 保持する部分行列
+        // 前計算 
         //----------------------------------------------------------------------
-        // row col val
-        ofs << "#SubMatrix" << endl;
-        sort(elements.begin(), elements.end(), RowComparator());
-        int localNumberOfRows = count(idx2part, idx2part+nCell, p);
-        int numInternalNnz = count_if(elements.begin(), elements.end(), 
-                [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] == p; });
-        int numExternalNnz = count_if(elements.begin(), elements.end(), 
-                [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] != p; });
 
-        ofs << localNumberOfRows << " " << numInternalNnz << " " << numExternalNnz << endl;
-
-        for_each(elements.begin(), elements.end(), 
-                [&](const Element &e){ if (idx2part[e.row] == p && idx2part[e.col] == p) 
-                ofs << e.row << " " << e.col << " " << e.val << endl; 
-                });
-        for_each(elements.begin(), elements.end(), 
-                [&](const Element &e){ if (idx2part[e.row] == p && idx2part[e.col] != p) 
-                ofs << e.row << " " << e.col << " " << e.val << endl; 
-                });
-
-        //----------------------------------------------------------------------
-        // 通信 
-        //----------------------------------------------------------------------
-        ofs << "#Communication" << endl;
         vector< set<int> > sendElements(nCell); // global index of column
         vector< set<int> > recvElements(nCell); // global index of column
         for (int i = 0; i < elements.size(); i++) {
@@ -195,6 +172,8 @@ int main(int argc, char *argv[])
         // allCol == internalCol + externalCol
         map<int, int> global2local;
         const int externalOffset = internalCol.size();
+        sort(internalCol.begin(), internalCol.end());
+        sort(externalCol.begin(), externalCol.end());
         for (auto it = allCol.begin(); it != allCol.end(); it++) {
             if (binary_search(internalCol.begin(), internalCol.end(), *it)) {
                 int pos = lower_bound(internalCol.begin(), internalCol.end(), *it) - internalCol.begin();
@@ -217,6 +196,10 @@ int main(int argc, char *argv[])
         for (auto it = global2local.begin(); it != global2local.end(); it++) {
             local2global[it->second] = it->first;
         }
+        //----------------------------------------------------------------------
+        // 保持する部分行列
+        //----------------------------------------------------------------------
+        // row col val
         ofs << "#LocalToGlobalTable" << endl;
         ofs << allCol.size() << endl;
         for (int i = 0; i < allCol.size(); i++) {
@@ -225,6 +208,29 @@ int main(int argc, char *argv[])
         }
         ofs << endl;
 
+        ofs << "#SubMatrix" << endl;
+        sort(elements.begin(), elements.end(), RowComparator());
+        int localNumberOfRows = count(idx2part, idx2part+nCell, p);
+        int numInternalNnz = count_if(elements.begin(), elements.end(), 
+                [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] == p; });
+        int numExternalNnz = count_if(elements.begin(), elements.end(), 
+                [&](const Element &e) { return idx2part[e.row] == p && idx2part[e.col] != p; });
+
+        ofs << localNumberOfRows << " " << numInternalNnz << " " << numExternalNnz << endl;
+
+        for_each(elements.begin(), elements.end(), 
+                [&](const Element &e){ if (idx2part[e.row] == p && idx2part[e.col] == p) 
+                ofs << e.row << " " << e.col << " " << e.val << endl; 
+                });
+        for_each(elements.begin(), elements.end(), 
+                [&](const Element &e){ if (idx2part[e.row] == p && idx2part[e.col] != p) 
+                ofs << e.row << " " << e.col << " " << e.val << endl; 
+                });
+
+        //----------------------------------------------------------------------
+        // 通信 
+        //----------------------------------------------------------------------
+        ofs << "#Communication" << endl;
 
         ofs << "#Send" << endl;
         ofs << nSendNeighbors << " " << nSendElements << endl;

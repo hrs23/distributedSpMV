@@ -41,6 +41,9 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	{
 		SpMVInternal(A, x, y);
 	}
+    if (rank == 2) { 
+        cerr << "yv " << y.values[0]  << endl;
+    }
 	//==============================
 	// Wait Asynchronous Communication
 	//==============================
@@ -57,6 +60,9 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	{
 		SpMVExternal(A, x, y);
 	}
+    if (rank == 2) { 
+        cerr << "yv " << y.values[0]  << endl;
+    }
 	MPI_Barrier(MPI_COMM_WORLD);
 	delete [] recvRequest;
 	delete [] sendRequest;

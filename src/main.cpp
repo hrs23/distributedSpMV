@@ -28,38 +28,50 @@ int main (int argc, char *argv[]) {
     if (rank == 0) cout << "[HostName]" << endl;
     MPI_Barrier(MPI_COMM_WORLD);
     PrintHostName();
+    MPI_Barrier(MPI_COMM_WORLD); cerr.flush(); cout.flush();
     string  partFile = string(argv[1]) + "-" + to_string(static_cast<long long>(size)) + "-" + to_string(static_cast<long long>(rank)) + ".part"; 
-    if (rank == 0) cerr << "Now: LoadSparseMatrix" << endl;
+    if (rank == 0) cerr << "[Now: LoadSparseMatrix]" << endl;
+    MPI_Barrier(MPI_COMM_WORLD); cerr.flush(); cout.flush();
     SparseMatrix A;
     Vector x, y;
     LoadInput(partFile, A, x);
     CreateZeroVector(y, A.localNumberOfRows);
+    MPI_Barrier(MPI_COMM_WORLD); cerr.flush(); cout.flush();
 
     //------------------------------
     // SpMV
     //------------------------------
-    if (rank == 0) cerr << "Now: ComputeSPMV" << endl;
+    if (rank == 0) cerr << "[Now: ComputeSPMV]" << endl;
     SpMV(A, x, y);
+    MPI_Barrier(MPI_COMM_WORLD); cerr.flush(); cout.flush();
 
     //------------------------------
     // DELETE
     //------------------------------
-    if (rank == 0) cerr << "Now: Delete A, x" << endl;
+    if (rank == 0) cerr << "[Now: Delete A, x]" << endl;
     DeleteSparseMatrix(A);
     DeleteVector(x);
+    MPI_Barrier(MPI_COMM_WORLD); cerr.flush(); cout.flush();
 
     //------------------------------
     // Verify
     //------------------------------
-    PrintResult(A, y);
-    if (rank == 0) cerr << "Now: Verify" << endl;
+    //if (rank == 0) cerr << "Now: Verify" << endl;
+    MPI_Barrier(MPI_COMM_WORLD); cerr.flush(); cout.flush();
 
+    //------------------------------
+    // Print 
+    //------------------------------
+    if (rank == 0) cerr << "[Now: Print result]" << endl;
+    PrintResult(A, y);
+    MPI_Barrier(MPI_COMM_WORLD); cerr.flush(); cout.flush();
 
     //------------------------------
     // DELETE
     //------------------------------
-    if (rank == 0) cerr << "Now: Delete y" << endl;
+    if (rank == 0) cerr << "[Now: Delete y]" << endl;
     DeleteVector(y);
+    MPI_Barrier(MPI_COMM_WORLD); cerr.flush(); cout.flush();
 
 
     
@@ -67,7 +79,7 @@ int main (int argc, char *argv[]) {
     //------------------------------
     // REPORT
     //------------------------------
-    if (rank == 0) cerr << "Now: Finalize" << endl;
+    if (rank == 0) cerr << "[Now: Finalize]" << endl;
     MPI_Finalize();
     if (rank == 0) cerr << "Complete!!" << endl;
     return 0;

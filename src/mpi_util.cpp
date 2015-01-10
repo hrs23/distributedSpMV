@@ -4,6 +4,7 @@
 #include <map>
 #include <cassert>
 #include <cstring>
+#include <cstdio>
 #include <mpi.h>
 #include "mpi_util.h"
 #include "sparse_matrix.h"
@@ -53,6 +54,16 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
     for (int i = 0; i < A.globalNumberOfRows; i++) ifs >> A.assign[i];
 
     //--------------------------------------------------------------------------------
+    // Local <-> global map
+    //--------------------------------------------------------------------------------
+    ifs >> comment; assert(comment == "#LocalToGlobalTable");
+    ifs >> A.totalNumberOfUsedCols;
+    A.local2global = new int[A.totalNumberOfUsedCols];
+    for (int i = 0; i < A.totalNumberOfUsedCols; i++) {
+        ifs >> A.local2global[i];
+        A.global2local[A.local2global[i]] = i;
+    }
+    //--------------------------------------------------------------------------------
     // SubMatrix
     //--------------------------------------------------------------------------------
     ifs >> comment; assert(comment == "#SubMatrix");
@@ -68,9 +79,11 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
             int row, col;
             double val;
             ifs >> row >> col >> val;
+            row = A.global2local[row];
+            col = A.global2local[col];
             A.internalIdx[i] = col;
             A.internalVal[i] = val;
-            if (rank == 0) cerr << "internal " << row << " " << col << " " << val << endl;
+            if (rank == 0) cerr << "internal " << row << " " << col << " " << val << " i & ip " << i << " " << ip << endl;
             while (ip <= row) A.internalPtr[ip++] = i;
         }
         while (ip <= A.localNumberOfRows) A.internalPtr[ip++] = numInternalNnz;
@@ -84,6 +97,8 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
             int row, col;
             double val;
             ifs >> row >> col >> val;
+            row = A.global2local[row];
+            col = A.global2local[col];
             A.externalIdx[i] = col;
             A.externalVal[i] = val;
             if (rank == 0) cerr << "external " << row << " " << col << " " << val << endl;
@@ -97,12 +112,6 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
     // Communication
     //--------------------------------------------------------------------------------
     ifs >> comment; assert(comment == "#Communication");
-    ifs >> comment; assert(comment == "#LocalToGlobalTable");
-    ifs >> A.totalNumberOfUsedCols;
-    A.local2global = new int[A.totalNumberOfUsedCols];
-    for (int i = 0; i < A.totalNumberOfUsedCols; i++) {
-        ifs >> A.local2global[i];
-    }
 
     ifs >> comment; assert(comment == "#Send");
     ifs >> A.numberOfSendNeighbors >> A.totalNumberOfSend;
@@ -147,15 +156,14 @@ void PrintResult (SparseMatrix &A, Vector &y) {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    map<int, int> global2local;
-    for (int i = 0; i < A.localNumberOfRows; i++) {
-        global2local[A.local2global[i]] = i;
-    }
+    MPI_Barrier(MPI_COMM_WORLD);
     for (int i = 0; i < A.globalNumberOfRows; i++) {
         MPI_Barrier(MPI_COMM_WORLD);
         if (A.assign[i] == rank) {
-            cerr << i << " " << y.values[global2local[i]] << endl;
+            cerr << i << " " << rank << " " <<  A.global2local[i] << " " << y.values[A.global2local[i]] << endl;
         }
+        cerr.flush();
+        MPI_Barrier(MPI_COMM_WORLD);
     }
 }
 

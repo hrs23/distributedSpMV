@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 struct SparseMatrix {
     int *assign;
     int globalNumberOfRows;
@@ -17,6 +18,7 @@ struct SparseMatrix {
 
     int totalNumberOfUsedCols;
     int *local2global;
+    std::map<int, int> global2local;
 
     int numberOfSendNeighbors;
     int numberOfRecvNeighbors;    
