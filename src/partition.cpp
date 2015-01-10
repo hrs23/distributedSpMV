@@ -81,11 +81,29 @@ int main(int argc, char *argv[])
     PaToH_Parameters params;
     PaToH_Initialize_Parameters(&params, PATOH_CONPART, PATOH_SUGPARAM_DEFAULT);
     params._k = nPart;
-    int cutsize;
+    /*
     cerr << "Alloc " << nCell << " " << nNet << " " << nConst << endl;
+    cerr << "Cell " << endl;
+    for (int i = 0; i < nCell; i++) {
+        cerr << "cell:" << i << " weight:" << weights[i] << endl;
+        for (int j = xnets[i]; j < xnets[i+1]; j++) {
+            cerr << nets[j] << endl;
+        }
+    }
+    cerr << "Net " << endl;
+    for (int i = 0; i < nCell; i++) {
+        cerr << "net:" << i << " cost:" << weights[i] << endl;
+        for (int j = xpins[i]; j < xpins[i+1]; j++) {
+            cerr << pins[j] << endl;
+        }
+    }
+    cerr << "--------------------------------------------------------------" << endl;
+    */
     PaToH_Alloc(&params, nCell, nNet, nConst, weights, costs, xpins, pins);
+
     int *idx2part = new int[nCell];
     int *partweights = new int[params._k * nConst];
+    int cutsize;
     PaToH_Part(&params, nCell, nNet, nConst, 0, weights, costs, xpins, pins, NULL, idx2part, partweights, &cutsize);
 
     vector< vector<int> > part2idx(nPart);
