@@ -24,7 +24,9 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
     mkl_dcsrmv(&transa, &nrow, &ncol, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
+    /*
     if (rank == 2) {
+
         cerr << "x y" << endl;
         for (int i = 0; i < A.localNumberOfRows; i++) {
             cerr << xv[i] << " " << yv[i] << endl;
@@ -36,7 +38,7 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
                 cerr << i << " " << idx[j] << " " << val[j] << endl;
             }
         }
-    }
+    }*/
     return 0;
 }
 int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
@@ -58,6 +60,7 @@ int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
     char transa = 'N';
     char *matdescra = "GLNC";
     mkl_dcsrmv(&transa, &nrow, &ncol, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
+    /*
     if (rank == 2) {
         cerr << "x y" << endl;
         for (int i = 0; i < A.localNumberOfRows; i++) {
@@ -71,5 +74,6 @@ int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
             }
         }
     }
+    */
     return 0;
 }

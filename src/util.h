@@ -1,8 +1,12 @@
 #pragma once
 #include <string>
+#include <fstream>
+#include <iostream>
 #include <vector>
 #include <set>
 #include <map>
+#include <cassert>
+#include <sstream>
 using namespace std;
 
 struct Element {
@@ -26,6 +30,12 @@ struct ColComparator {
 
 string GetBasename (const string &path);
 
+vector<Element> GetElementsFromFile (const char *mtxFile, int &nRow, int &nCol, int &nNnz);
+void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
+
+//------------------------------------------
+// template
+//------------------------------------------
 template<class T> 
 ostream& operator << (ostream &os, const vector<T> &v) { 
     os << "["; 

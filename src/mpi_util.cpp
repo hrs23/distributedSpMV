@@ -5,10 +5,14 @@
 #include <cassert>
 #include <cstring>
 #include <cstdio>
+#include <cmath>
+#include <vector>
+#include <algorithm>
 #include <mpi.h>
 #include "mpi_util.h"
 #include "sparse_matrix.h"
 #include "vector.h"
+#include "util.h"
 using namespace std;
 
 
@@ -83,7 +87,6 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
             col = A.global2local[col];
             A.internalIdx[i] = col;
             A.internalVal[i] = val;
-            if (rank == 0) cerr << "internal " << row << " " << col << " " << val << " i & ip " << i << " " << ip << endl;
             while (ip <= row) A.internalPtr[ip++] = i;
         }
         while (ip <= A.localNumberOfRows) A.internalPtr[ip++] = numInternalNnz;
@@ -101,7 +104,6 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
             col = A.global2local[col];
             A.externalIdx[i] = col;
             A.externalVal[i] = val;
-            if (rank == 0) cerr << "external " << row << " " << col << " " << val << endl;
             while (ep <= row) A.externalPtr[ep++] = i;
         }
         while (ep <= A.localNumberOfRows) A.externalPtr[ep++] = numExternalNnz;
@@ -165,6 +167,71 @@ void PrintResult (SparseMatrix &A, Vector &y) {
         cerr.flush();
         MPI_Barrier(MPI_COMM_WORLD);
     }
+}
+
+
+bool VerifySpMV (const char *mtxFile, const SparseMatrix &A, const Vector &y) {
+    bool res = true;
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    double *unorderedResult = new double[A.globalNumberOfRows];
+    double *localReorderedResult = new double[A.localNumberOfRows];
+    vector<int> localRows;
+    for (int i = 0; i < A.globalNumberOfRows; i++) {
+        if (rank == A.assign[i]) localRows.push_back(i);
+    }
+    for (int i = 0; i < A.localNumberOfRows; i++) {
+        int idx = lower_bound(localRows.begin(), localRows.end(), A.local2global[i]) - localRows.begin();
+        localReorderedResult[idx] = y.values[i];
+    }
+    int *recvCount = new int[size];
+    memset(recvCount, 0, size * sizeof(int));
+    for (int i = 0; i < A.globalNumberOfRows; i++) recvCount[A.assign[i]]++;
+    int *displs = new int[size+1];
+    displs[0] = 0;
+    for (int i = 0; i < size; i++) displs[i+1] = displs[i] + recvCount[i];
+    MPI_Allgatherv(localReorderedResult, A.localNumberOfRows, MPI_DOUBLE, unorderedResult, recvCount, displs, MPI_DOUBLE, MPI_COMM_WORLD);
+    double *result = new double[A.globalNumberOfRows];
+    int *index = new int[size];
+    memset(index, 0, size * sizeof(int));
+    for (int i = 0; i < A.globalNumberOfRows; i++) {
+        int p = A.assign[i];
+        result[i] = unorderedResult[displs[p] + index[p]];
+        index[p]++;
+    }
+    int nRow, nCol, nNnz;
+    vector<Element> elements = GetElementsFromFile(mtxFile, nRow, nCol, nNnz);
+
+    int *ptr = new int[nRow+1];
+    int *idx = new int[nNnz];
+    double *val = new double[nNnz];
+    int p = 0;
+    for (int i = 0; i < nNnz; i++) {
+        int r = elements[i].row;
+        idx[i] = elements[i].col;
+        val[i] = elements[i].val;
+        //if (rank == 0) printf("%d %d %lf\n", r, idx[i], val[i]);
+        while (p <= r) ptr[p++] = i;
+    }
+    while (p <= nRow) ptr[p++] = nNnz;
+
+    for (int i = 0; i < nRow; i++) {
+        double sum = 0;
+        for (int j = ptr[i]; j < ptr[i+1]; j++) {
+            //  TODO
+            //sum += val[j] *(idx[j] + 1);
+            sum += val[j] * (1);
+        }
+        double relative_error = abs(abs(result[i] - sum) / result[i]);
+        const double EPS = 1e-8;
+        if (relative_error > EPS)  {
+            if (rank == 0) cerr << "Result is wrong at " << i << " expected value: " << sum << " returned value: " << result[i] << endl;
+            res = false;
+        }
+
+    }
+    return res;
 }
 
 void DeleteSparseMatrix (SparseMatrix & A) {

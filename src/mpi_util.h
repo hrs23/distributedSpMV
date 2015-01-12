@@ -12,6 +12,7 @@ void PrintHostName ();
 void LoadInput (const string &partFile, SparseMatrix &A, Vector &x);
 void CreateZeroVector (Vector &x, int length);
 void PrintResult (SparseMatrix &A, Vector &y);
+bool VerifySpMV (const char *mtxFile, const SparseMatrix &A, const Vector &y);
 
 void DeleteSparseMatrix (SparseMatrix & A);
 void DeleteVector (Vector & x);

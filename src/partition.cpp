@@ -10,35 +10,19 @@
 #include <cassert>
 #include "util.h"
 #include "patoh.h"
-
 using namespace std;
+
+void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
+void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const char *inputFile, const char *outputDir);
+
 int main(int argc, char *argv[])
 {
     if (argc != 4) {
         fprintf(stderr, "Usage: %s <input matrix file> <number of parts> <output partition directory>\n", argv[0]);
         exit(1);
     }
-    ifstream ifs(argv[1]);
-    if (!ifs.is_open()) {
-        cerr << "File not Found" << endl;
-        exit(1);
-    }
     int nRow, nCol, nNnz;
-    string line;
-    do {
-        getline(ifs, line);
-    } while (line[0] == '%');
-    stringstream ss(line);
-    ss >> nRow >> nCol >> nNnz;
-    assert(nRow == nCol);
-    vector<Element> elements(nNnz);
-    for (int i = 0; i < nNnz; i++) {
-        int row, col;
-        double val;
-        ifs >> row >> col >> val;
-        row--; col--; 
-        elements[i] = Element(row, col, val);
-    }
+    vector<Element> elements = GetElementsFromFile(argv[1], nRow, nCol, nNnz);
 
     int nPart = atoi(argv[2]);
     assert(nPart >= 2);
@@ -78,48 +62,46 @@ int main(int argc, char *argv[])
         }
     }
 
+    int *idx2part = new int[nCell];
+    GetHypergraphPartitioning(nPart, nCell, nNet, nConst, weights, costs, xpins, pins, idx2part);
+    CreatePartitionFiles(nPart, elements, nRow, nCol, nNnz, idx2part, argv[1], argv[3]);
+
+//    PaToH_Free();
+    return 0;
+}
+
+void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part) {
+
     PaToH_Parameters params;
     PaToH_Initialize_Parameters(&params, PATOH_CONPART, PATOH_SUGPARAM_DEFAULT);
     params._k = nPart;
-    /*
-    cerr << "Alloc " << nCell << " " << nNet << " " << nConst << endl;
-    cerr << "Cell " << endl;
-    for (int i = 0; i < nCell; i++) {
-        cerr << "cell:" << i << " weight:" << weights[i] << endl;
-        for (int j = xnets[i]; j < xnets[i+1]; j++) {
-            cerr << nets[j] << endl;
-        }
-    }
-    cerr << "Net " << endl;
-    for (int i = 0; i < nCell; i++) {
-        cerr << "net:" << i << " cost:" << weights[i] << endl;
-        for (int j = xpins[i]; j < xpins[i+1]; j++) {
-            cerr << pins[j] << endl;
-        }
-    }
-    cerr << "--------------------------------------------------------------" << endl;
-    */
     PaToH_Alloc(&params, nCell, nNet, nConst, weights, costs, xpins, pins);
-
-    int *idx2part = new int[nCell];
+    
     int *partweights = new int[params._k * nConst];
     int cutsize;
     PaToH_Part(&params, nCell, nNet, nConst, 0, weights, costs, xpins, pins, NULL, idx2part, partweights, &cutsize);
+}
 
+
+void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const char *inputFile, const char *outputDir) {
+    int nCell = nRow;
+    int nNet = nCol;
+    int nPin = nNnz;
     vector< vector<int> > part2idx(nPart);
     for (int i = 0; i < nCell; i++) {
         part2idx[idx2part[i]].push_back(i);
     }
-    //#pragma omp parallel for
+#pragma omp parallel for
     for (int p = 0; p < nPart; p++) {
-        string dir = argv[3];
-        string file = GetBasename(argv[1]) + "-"
+        string dir = outputDir;
+        string file = GetBasename(inputFile) + "-"
             + to_string(static_cast<long long>(nPart)) + "-"
             + to_string(static_cast<long long>(p)) + ".part";
-        cout << dir + "/" + file << endl;
+        //cout << dir + "/" + file << endl;
+        printf("%s/%s\n", dir.c_str(), file.c_str());
         ofstream ofs(dir + "/" + file);
         ofs << "#Matrix" << endl;
-        ofs << nRow << " " << nCol << " " << nNnz << " " << nPart << " " << GetBasename(argv[1]) << endl;
+        ofs << nRow << " " << nCol << " " << nNnz << " " << nPart << " " << GetBasename(inputFile) << endl;
         //----------------------------------------------------------------------
         // 保持する行番号
         //----------------------------------------------------------------------
@@ -129,15 +111,6 @@ int main(int argc, char *argv[])
             ofs << idx2part[i];
         }
         ofs << endl;
-        /*
-           for (int i = 0; i < nPart; i++) {
-           ofs << part2idx[i].size();
-           for (int j = 0; j < part2idx[i].size(); j++) {
-           ofs << " " << part2idx[i][j];
-           }
-           ofs << endl;
-           }
-           */
 
         //----------------------------------------------------------------------
         // 前計算 
@@ -256,8 +229,4 @@ int main(int argc, char *argv[])
         }
         ofs.close();
     }
-    delete [] idx2part;
-    delete [] partweights;
-    PaToH_Free();
-    return 0;
 }
