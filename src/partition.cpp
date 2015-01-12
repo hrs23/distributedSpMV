@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <cassert>
 #include "util.h"
 #include "patoh.h"
@@ -25,7 +26,6 @@ int main(int argc, char *argv[])
     vector<Element> elements = GetElementsFromFile(argv[1], nRow, nCol, nNnz);
 
     int nPart = atoi(argv[2]);
-    assert(nPart >= 2);
     int nPin = nNnz, nCell = nRow, nNet = nCol, nConst = 0;
 
     int *xnets = new int[nCell+1];
@@ -63,7 +63,11 @@ int main(int argc, char *argv[])
     }
 
     int *idx2part = new int[nCell];
-    GetHypergraphPartitioning(nPart, nCell, nNet, nConst, weights, costs, xpins, pins, idx2part);
+    if (nPart >= 2) {
+        GetHypergraphPartitioning(nPart, nCell, nNet, nConst, weights, costs, xpins, pins, idx2part);
+    } else {
+        memset(idx2part, 0, nCell * sizeof(int));
+    }
     CreatePartitionFiles(nPart, elements, nRow, nCol, nNnz, idx2part, argv[1], argv[3]);
 
 //    PaToH_Free();
@@ -91,7 +95,6 @@ void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow,
     for (int i = 0; i < nCell; i++) {
         part2idx[idx2part[i]].push_back(i);
     }
-#pragma omp parallel for
     for (int p = 0; p < nPart; p++) {
         string dir = outputDir;
         string file = GetBasename(inputFile) + "-"
@@ -100,6 +103,8 @@ void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow,
         //cout << dir + "/" + file << endl;
         printf("%s/%s\n", dir.c_str(), file.c_str());
         ofstream ofs(dir + "/" + file);
+        ofs.precision(18);
+
         ofs << "#Matrix" << endl;
         ofs << nRow << " " << nCol << " " << nNnz << " " << nPart << " " << GetBasename(inputFile) << endl;
         //----------------------------------------------------------------------
@@ -146,6 +151,13 @@ void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow,
         map<int, int> global2local;
         const int externalOffset = internalCol.size();
         sort(internalCol.begin(), internalCol.end());
+        for (int i = 0; i < internalCol.size(); i++) {
+            global2local[internalCol[i]] = i;
+        }
+        for (int i = 0; i < externalCol.size(); i++) {
+            global2local[externalCol[i]] = i + externalOffset;
+        }
+        /*
         sort(externalCol.begin(), externalCol.end());
         for (auto it = allCol.begin(); it != allCol.end(); it++) {
             if (binary_search(internalCol.begin(), internalCol.end(), *it)) {
@@ -155,7 +167,7 @@ void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow,
                 int pos = lower_bound(externalCol.begin(), externalCol.end(), *it) - externalCol.begin();
                 global2local[*it] = pos + externalOffset;
             }
-        }
+        }*/
 
         int nSendNeighbors = 0, nRecvNeighbors = 0;
         int nSendElements = 0, nRecvElements = 0;

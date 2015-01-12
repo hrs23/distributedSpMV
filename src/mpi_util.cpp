@@ -146,7 +146,10 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
     }
     assert(recvOffset == A.totalNumberOfRecv);
     x.values = new double[A.totalNumberOfUsedCols];
-    fill(x.values, x.values + A.totalNumberOfUsedCols, 1);
+    for (int i = 0; i < A.localNumberOfRows; i++) {
+        x.values[i] = A.local2global[i] + 1;
+    }
+    //fill(x.values, x.values + A.totalNumberOfUsedCols, 1);
 }
 
 void CreateZeroVector (Vector &v, int length) {
@@ -219,17 +222,16 @@ bool VerifySpMV (const char *mtxFile, const SparseMatrix &A, const Vector &y) {
     for (int i = 0; i < nRow; i++) {
         double sum = 0;
         for (int j = ptr[i]; j < ptr[i+1]; j++) {
-            //  TODO
-            //sum += val[j] *(idx[j] + 1);
-            sum += val[j] * (1);
+            // TODO
+            sum += val[j] *(idx[j] + 1);
+            //sum += val[j] * 1;
         }
         double relative_error = abs(abs(result[i] - sum) / result[i]);
-        const double EPS = 1e-8;
+        const double EPS = 1e-5;
         if (relative_error > EPS)  {
-            if (rank == 0) cerr << "Result is wrong at " << i << " expected value: " << sum << " returned value: " << result[i] << endl;
+            if (rank == 0) cerr << "Result is wrong at " << i << " expected value: " << sum << " returned value: " << result[i] << " relative error: " << relative_error << " absolute error: " << abs(result[i]-sum) << endl;
             res = false;
         }
-
     }
     return res;
 }

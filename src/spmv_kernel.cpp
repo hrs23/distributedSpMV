@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdio>
 #include <mkl.h>
 #include <mpi.h>
 #include "spmv_kernel.h"
@@ -55,6 +56,13 @@ int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
     int *idx = A.externalIdx;
     double *val = A.externalVal;
 
+    /*
+    for (int i = 0; i < nrow; i++) {
+        for (int j = ptr[i]; j < ptr[i+1]; j++) {
+            printf("%d %d %lf\n", i, idx[j], val[j]);
+        }
+    }
+    */
     MKL_INT *ptr_b = static_cast<MKL_INT*>(ptr);
     MKL_INT *ptr_e = ptr_b + 1;
     char transa = 'N';
