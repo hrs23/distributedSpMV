@@ -1,8 +1,14 @@
 #/bin/bash
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <matrix>"
-    exit 1
-fi
+SPMV_DIR=~/distributedSpMV/
+matrix_files=`ls ${SPMV_DIR}/matrix/*.mtx | xargs -i basename {}`:
 
-./bin/partition matrix/$1 2 partition/
-srun -p FATE  mpirun -np 2 bin/spmv partition/$1 matrix/$1
+nproc=12
+for matrix in ${matrix_files}
+do
+    echo "-----------"
+    echo "${matrix} "
+    echo "-----------"
+    ${SPMV_DIR}/bin/partition ${SPMV_DIR}/matrix/${matrix} ${nproc} partition/
+    salloc -p FATE -N 4 --ntasks-per-node=3 mpirun ${SPMV_DIR}/bin/spmv ${SPMV_DIR}/partition/${matrix} ${SPMV_DIR}matrix/${matrix}
+done
+

@@ -24,8 +24,8 @@ void PrintHostName () {
     char hostname[256];
     int namelen;
     MPI_Get_processor_name(hostname, &namelen);
-    fprintf(stderr, "%d/%d %s\n", rank, size, hostname);
-    fflush(stderr);
+    fprintf(stdout, "%d/%d %s\n", rank, size, hostname);
+    fflush(stdout);
 }
 
 void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {

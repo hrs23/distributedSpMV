@@ -25,21 +25,6 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
     mkl_dcsrmv(&transa, &nrow, &ncol, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
-    /*
-    if (rank == 2) {
-
-        cerr << "x y" << endl;
-        for (int i = 0; i < A.localNumberOfRows; i++) {
-            cerr << xv[i] << " " << yv[i] << endl;
-        }
-        cerr << "Mat" << endl;
-        for (int i = 0; i < nrow; i++) {
-            cerr << i << " " << ptr[i] << " to " << ptr[i+1] << endl;
-            for (int j = ptr[i]; j < ptr[i+1]; j++) {
-                cerr << i << " " << idx[j] << " " << val[j] << endl;
-            }
-        }
-    }*/
     return 0;
 }
 int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
@@ -55,33 +40,10 @@ int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
     int *ptr = A.externalPtr;
     int *idx = A.externalIdx;
     double *val = A.externalVal;
-
-    /*
-    for (int i = 0; i < nrow; i++) {
-        for (int j = ptr[i]; j < ptr[i+1]; j++) {
-            printf("%d %d %lf\n", i, idx[j], val[j]);
-        }
-    }
-    */
     MKL_INT *ptr_b = static_cast<MKL_INT*>(ptr);
     MKL_INT *ptr_e = ptr_b + 1;
     char transa = 'N';
     char *matdescra = "GLNC";
     mkl_dcsrmv(&transa, &nrow, &ncol, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
-    /*
-    if (rank == 2) {
-        cerr << "x y" << endl;
-        for (int i = 0; i < A.localNumberOfRows; i++) {
-            cerr << xv[i] << " " << yv[i] << endl;
-        }
-        cerr << "Mat" << endl;
-        for (int i = 0; i < nrow; i++) {
-            cerr << i << " " << ptr[i] << " to " << ptr[i+1] << endl;
-            for (int j = ptr[i]; j < ptr[i+1]; j++) {
-                cerr << i << " " << idx[j] << " " << val[j] << endl;
-            }
-        }
-    }
-    */
     return 0;
 }

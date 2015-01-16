@@ -65,3 +65,7 @@ ostream& operator << (ostream &os, const pair<T, S> &p) {
     os << "(" << p.first << ", " << p.second << ")"; 
     return os; 
 }
+
+inline string to_string (int n) {
+    return to_string(static_cast<long long>(n));
+}
