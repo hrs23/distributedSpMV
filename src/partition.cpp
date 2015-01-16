@@ -101,7 +101,7 @@ void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow,
             + to_string(static_cast<long long>(nPart)) + "-"
             + to_string(static_cast<long long>(p)) + ".part";
         //cout << dir + "/" + file << endl;
-        printf("%s/%s\n", dir.c_str(), file.c_str());
+        //printf("%s/%s\n", dir.c_str(), file.c_str());
         ofstream ofs(dir + "/" + file);
         ofs.precision(18);
 

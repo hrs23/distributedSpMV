@@ -49,12 +49,12 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	//==============================
 	// Compute Internal
 	//==============================
-    timingTemp[TIMING_TOTAL_COMPUTATION] = -MPI_Wtime();
+    timingTemp[TIMING_INTERNAL_COMPUTATION] = -MPI_Wtime();
 	{
 		SpMVInternal(A, x, y);
 	}
     MPI_Barrier(MPI_COMM_WORLD);
-    timingTemp[TIMING_TOTAL_COMPUTATION] += MPI_Wtime();
+    timingTemp[TIMING_INTERNAL_COMPUTATION] += MPI_Wtime();
 	//==============================
 	// Wait Asynchronous Communication
 	//==============================
@@ -71,12 +71,14 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	//==============================
 	// Compute External
 	//==============================
-    timingTemp[TIMING_TOTAL_COMPUTATION] -= MPI_Wtime();
+    timingTemp[TIMING_EXTERNAL_COMPUTATION] -= MPI_Wtime();
 	{
 		SpMVExternal(A, x, y);
 	}
     MPI_Barrier(MPI_COMM_WORLD);
-    timingTemp[TIMING_TOTAL_COMPUTATION] += MPI_Wtime();
+    timingTemp[TIMING_EXTERNAL_COMPUTATION] += MPI_Wtime();
+    timingTemp[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] + 
+                                           timingTemp[TIMING_EXTERNAL_COMPUTATION];
 	delete [] recvRequest;
 	delete [] sendRequest;
 	return 0;

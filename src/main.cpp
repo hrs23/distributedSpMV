@@ -31,8 +31,6 @@ int main (int argc, char *argv[]) {
         mtxFile = argv[2];
     }
     MPI_Init(&argc, &argv);
-
-
     //------------------------------
     // INIT
     //------------------------------
@@ -41,7 +39,8 @@ int main (int argc, char *argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     if (rank == 0) fprintf(stderr, "Begin %s\n", mtxFile);
     POUT("[ Hostname ]\n");
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
+    MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     PrintHostName();
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     string partFile = string(argv[1]) + "-" + to_string(size) + "-" + to_string(rank) + ".part"; 
@@ -61,6 +60,8 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_TOTAL_SPMV] = "Total SpMV";
     timingDetail[TIMING_TOTAL_COMMUNICATION] = "Total Communication";
     timingDetail[TIMING_TOTAL_COMPUTATION]  = "Total Computation";
+    timingDetail[TIMING_INTERNAL_COMPUTATION]  = "Internal Computation";
+    timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "External Computation";
     timingDetail[TIMING_PACKING] = "Packing";
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
         MPI_Barrier(MPI_COMM_WORLD); 
@@ -72,6 +73,8 @@ int main (int argc, char *argv[]) {
             timing[TIMING_TOTAL_SPMV] = tmp;
             timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION];
             timing[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_TOTAL_COMPUTATION];
+            timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION];
+            timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION];
             timing[TIMING_PACKING] = timingTemp[TIMING_PACKING];
         }
     }

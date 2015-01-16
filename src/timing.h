@@ -5,5 +5,7 @@ using namespace std;
 #define TIMING_TOTAL_COMMUNICATION  1
 #define TIMING_TOTAL_COMPUTATION    2
 #define TIMING_PACKING              3
+#define TIMING_INTERNAL_COMPUTATION 4
+#define TIMING_EXTERNAL_COMPUTATION 5
 #define NUMBER_OF_TIMING        10
 extern vector<double> timingTemp;
