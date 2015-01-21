@@ -1,7 +1,7 @@
 *.out
 CMakeCache.txt
 CMakeFiles
-Makefile
+./Makefile
 test
 cmake_install.cmake
 hypergraph/*.u
