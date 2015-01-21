@@ -10,3 +10,6 @@ matrix/*.tar.gz
 bin/*
 partition/*.part
 test/
+stdout
+stderr
+log/*
