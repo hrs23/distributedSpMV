@@ -1,14 +1,14 @@
+#include <mpi.h>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <vector>
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <cstdio>
 #include <cmath>
-#include <vector>
-#include <algorithm>
-#include <mpi.h>
 #include "mpi_util.h"
 #include "sparse_matrix.h"
 #include "vector.h"

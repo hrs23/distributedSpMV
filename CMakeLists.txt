@@ -1,7 +1,9 @@
 # CMake variable
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-#SET(CMAKE_CXX_COMPILER "/opt/intel/bin/icpc")
-SET(CMAKE_CXX_COMPILER "/opt/intel/impi/5.0.1.035/intel64/bin/mpiicpc")
+# -- HPCS --
+#SET(CMAKE_CXX_COMPILER "/opt/intel/impi/5.0.1.035/intel64/bin/mpiicpc") 
+# -- COMA --
+SET(CMAKE_CXX_COMPILER "/app/intel/impi/4.1.3.048/intel64/bin/mpiicpc") 
 SET(CMAKE_CXX_FLAGS_RELEASE "-mkl -fopenmp -std=c++11 -Wall -O3")
 SET(CMAKE_CXX_FLAGS_DEBUG "-mkl -fopenmp -std=c++11 -Wall -g")
 SET(CMAKE_BUILD_TYPE DEBUG)
@@ -36,3 +38,5 @@ SET(SOURCE
     src/spmv_kernel.cpp
     )
 ADD_EXECUTABLE(${TARGET} ${SOURCE})
+#SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS "-mkl")
+

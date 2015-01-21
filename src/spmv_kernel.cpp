@@ -1,7 +1,7 @@
+#include <mpi.h>
 #include <iostream>
 #include <cstdio>
 #include <mkl.h>
-#include <mpi.h>
 #include "spmv_kernel.h"
 #include "sparse_matrix.h"
 #include "vector.h"
