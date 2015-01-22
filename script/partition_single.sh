@@ -10,12 +10,12 @@ fi
 #npart=$1
 
 matrices=`ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {}`
-for ((npart=1; npart <= 64; npart *= 2))
-do
 for matrix in $matrices
 do
-    echo -n "partitioning $matrix ... "
-    $SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix $npart $SPMV_DIR/partition/
-    echo "done"
-done
+    for ((npart=1; npart <= 64; npart *= 2))
+    do
+        echo -n "partitioning $matrix in $npart parts ... "
+        $SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix $npart $SPMV_DIR/partition/
+        echo "done"
+    done
 done
