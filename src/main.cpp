@@ -10,6 +10,8 @@
 #include "util.h"
 #include "mpi_util.h"
 #include "timing.h"
+#define PRINT_HOSTNAME
+#define PRINT_PERFORMANCE
 using namespace std;
 
 vector<char*>   timingDetail(NUMBER_OF_TIMING, NULL);
@@ -38,11 +40,6 @@ int main (int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     if (rank == 0) fprintf(stderr, "Begin %s\n", mtxFile);
-    POUT("[ Hostname ]\n");
-    MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
-    MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
-    PrintHostName();
-    MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     string partFile = string(argv[1]) + "-" + to_string(size) + "-" + to_string(rank) + ".part"; 
     PERR("Loading sparse matrix and vector ... ");
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
@@ -124,15 +121,24 @@ int main (int argc, char *argv[]) {
     //------------------------------
     // REPORT
     //------------------------------
+    PERR("Reporting ... ");
     if (rank == 0) {
-        puts("[ Performance ]");
+        puts("----------------------------------------");
+        printf("%20s\t%s\n", "Matrix", GetBasename(mtxFile).c_str());
+        printf("%20s\t%d\n", "Number Of Process", size);
+#ifdef PRINT_HOSTNAME
+        PrintHostName();
+#endif
+#ifdef PRINT_PERFORMANCE
         printf("%20s\t%.10lf\n", "GFLOPS", A.globalNumberOfNonzeros * 2 / timing[TIMING_TOTAL_SPMV] / 1e9);
         for (int i = 0; i < NUMBER_OF_TIMING; i++) {
             if (timingDetail[i] != NULL) {
                 printf("%20s\t%.10lf\n", timingDetail[i], timing[i]);
             }
         }
+#endif
     }
+    PERR("done\n");
     PERR("Finalizing ... ");
     MPI_Finalize();
     PERR("done\n");
