@@ -122,13 +122,13 @@ int main (int argc, char *argv[]) {
     // REPORT
     //------------------------------
     PERR("Reporting ... ");
-    if (rank == 0) {
-        puts("----------------------------------------");
-        printf("%20s\t%s\n", "Matrix", GetBasename(mtxFile).c_str());
-        printf("%20s\t%d\n", "Number Of Process", size);
+    POUT("----------------------------------------");
 #ifdef PRINT_HOSTNAME
         PrintHostName();
 #endif
+    if (rank == 0) {
+        printf("%20s\t%s\n", "Matrix", GetBasename(mtxFile).c_str());
+        printf("%20s\t%d\n", "Number Of Process", size);
 #ifdef PRINT_PERFORMANCE
         printf("%20s\t%.10lf\n", "GFLOPS", A.globalNumberOfNonzeros * 2 / timing[TIMING_TOTAL_SPMV] / 1e9);
         for (int i = 0; i < NUMBER_OF_TIMING; i++) {

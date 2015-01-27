@@ -21,23 +21,17 @@ void PrintHostName () {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    if (rank == 0) fprintf(stderr, "2\n");
     char hostname[256];
     char *buf = new char[size * 256];
     int namelen;
-    if (rank == 0) fprintf(stderr, "3\n");
     MPI_Get_processor_name(hostname, &namelen);
-    if (rank == 0) fprintf(stderr, "4\n");
     MPI_Gather(hostname, 256, MPI_CHAR, buf, 256, MPI_CHAR, 0, MPI_COMM_WORLD);
-    if (rank == 0) fprintf(stderr, "5\n");
     if (rank == 0) {
         for (int i = 0; i < size; i++) {
             fprintf(stdout, "%d/%d %s\n", i, size, buf + 256*i);
         }
-        if (rank == 0) fprintf(stderr, "6\n");
         fflush(stdout);
     }
-    if (rank == 0) fprintf(stderr, "7\n");
     delete [] buf;
 }
 
