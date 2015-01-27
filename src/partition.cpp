@@ -14,18 +14,23 @@
 using namespace std;
 
 void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
-void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const char *inputFile, const char *outputDir);
+void GetSimplePartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
+void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const string &inputFile, const string &outputDir);
 
 int main(int argc, char *argv[])
 {
-    if (argc != 4) {
-        fprintf(stderr, "Usage: %s <input matrix file> <number of parts> <output partition directory>\n", argv[0]);
+    if (argc != 5) {
+        fprintf(stderr, "Usage: %s <input matrix file> <type of partitioning ('hypergraph' or 'simple')> <number of parts> <output partition directory>\n", argv[0]);
         exit(1);
     }
-    int nRow, nCol, nNnz;
-    vector<Element> elements = GetElementsFromFile(argv[1], nRow, nCol, nNnz);
+    string matrixFile = argv[1];
+    string partitionType = argv[2];
+    int nPart = atoi(argv[3]);
+    string outputDir = argv[4];
 
-    int nPart = atoi(argv[2]);
+    int nRow, nCol, nNnz;
+    vector<Element> elements = GetElementsFromFile(matrixFile, nRow, nCol, nNnz);
+
     int nPin = nNnz, nCell = nRow, nNet = nCol, nConst = 0;
 
     int *xnets = new int[nCell+1];
@@ -64,11 +69,18 @@ int main(int argc, char *argv[])
 
     int *idx2part = new int[nCell];
     if (nPart >= 2) {
-        GetHypergraphPartitioning(nPart, nCell, nNet, nConst, weights, costs, xpins, pins, idx2part);
+        if (partitionType == "hypergraph") {
+            GetHypergraphPartitioning(nPart, nCell, nNet, nConst, weights, costs, xpins, pins, idx2part);
+        } else if (partitionType == "simple") {
+            GetSimplePartitioning(nPart, nCell, nNet, nConst, weights, costs, xpins, pins, idx2part);
+        } else {
+            puts("Error: Partition type is must be 'hypergraph' or 'simple'");
+            exit(0);
+        }
     } else {
         memset(idx2part, 0, nCell * sizeof(int));
     }
-    CreatePartitionFiles(nPart, elements, nRow, nCol, nNnz, idx2part, argv[1], argv[3]);
+    CreatePartitionFiles(nPart, elements, nRow, nCol, nNnz, idx2part, matrixFile, outputDir + "/" + partitionType);
 
 //    PaToH_Free();
     return 0;
@@ -86,8 +98,22 @@ void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int 
     PaToH_Part(&params, nCell, nNet, nConst, 0, weights, costs, xpins, pins, NULL, idx2part, partweights, &cutsize);
 }
 
+void GetSimplePartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part) {
+    int remainder = nCell % nPart;
+    vector<int> assign(nPart + 1);
+    int p = 0;
+    for (int i = 0; i <= nPart; i++) {
+        assign[i] = p;
+        p += (nCell / nPart) + (i < remainder);
+    }
+    for (int i = 0; i < nPart; i++) {
+        for (int j = assign[i]; j < assign[i+1]; j++) {
+            idx2part[j] = i;
+        }
+    }
+}
 
-void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const char *inputFile, const char *outputDir) {
+void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const string &inputFile, const string &outputDir) {
     int nCell = nRow;
     int nNet = nCol;
     int nPin = nNnz;
@@ -103,6 +129,7 @@ void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow,
         //cout << dir + "/" + file << endl;
         //printf("%s/%s\n", dir.c_str(), file.c_str());
         ofstream ofs(dir + "/" + file);
+        cout << dir + "/" + file << endl;
         ofs.precision(18);
 
         ofs << "#Matrix" << endl;

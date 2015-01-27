@@ -7,7 +7,7 @@ string GetBasename (const string &path) {
 }
 
 
-vector<Element> GetElementsFromFile (const char *mtxFile, int &nRow, int &nCol, int &nNnz) {
+vector<Element> GetElementsFromFile (const string &mtxFile, int &nRow, int &nCol, int &nNnz) {
     ifstream ifs(mtxFile);
     if (ifs.fail()) {
         cerr << "File not Found" << endl;
