@@ -122,7 +122,7 @@ int main (int argc, char *argv[]) {
     // REPORT
     //------------------------------
     PERR("Reporting ... ");
-    POUT("----------------------------------------");
+    POUT("----------------------------------------\n");
 #ifdef PRINT_HOSTNAME
         PrintHostName();
 #endif

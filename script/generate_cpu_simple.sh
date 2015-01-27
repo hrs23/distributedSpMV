@@ -5,10 +5,11 @@ if [ -z '$SPMV_DIR' ]; then
     exit 
 fi
 MAX_NPROC=64
+DISTRIBUTE_METHOD=simple
 for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
 do
 
-    RUN_SCRIPT=$SPMV_DIR/script/cpu/run_p${p}.sh
+    RUN_SCRIPT=$SPMV_DIR/script/cpu-$DISTRIBUTE_METHOD/run_p${p}.sh
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
     echo "\
 #!/bin/bash
@@ -23,9 +24,9 @@ do
 #SBATCH -e stderr
 #SBATCH -m block
 MATRIX_DIR=${SPMV_DIR}/matrix/
-PARTITION_DIR=${SPMV_DIR}/partition/
+PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
 SPMV=${SPMV_DIR}/bin/spmv
-LOG=${SPMV_DIR}/log/cpu-`date +%y-%m-%d`.tsv
+LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-`date +%y-%m-%d`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
