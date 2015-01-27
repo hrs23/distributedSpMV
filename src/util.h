@@ -30,7 +30,7 @@ struct ColComparator {
 
 string GetBasename (const string &path);
 
-vector<Element> GetElementsFromFile (const char *mtxFile, int &nRow, int &nCol, int &nNnz);
+vector<Element> GetElementsFromFile (const string &mtxFile, int &nRow, int &nCol, int &nNnz);
 void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
 
 //------------------------------------------

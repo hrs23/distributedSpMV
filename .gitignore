@@ -14,3 +14,4 @@ stdout
 stderr
 log/*
 script/cpu/*.sh
+*.part
