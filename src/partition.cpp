@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     } else {
         memset(idx2part, 0, nCell * sizeof(int));
     }
-    CreatePartitionFiles(nPart, elements, nRow, nCol, nNnz, idx2part, matrixFile, outputDir + "/" + partitionType);
+    CreatePartitionFiles(nPart, elements, nRow, nCol, nNnz, idx2part, matrixFile, outputDir);
 
 //    PaToH_Free();
     return 0;
