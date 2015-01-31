@@ -122,7 +122,6 @@ int main (int argc, char *argv[]) {
     // REPORT
     //------------------------------
     PERR("Reporting ... ");
-    POUT("----------------------------------------\n");
 #ifdef PRINT_HOSTNAME
         PrintHostName();
 #endif
@@ -138,6 +137,7 @@ int main (int argc, char *argv[]) {
         }
 #endif
     }
+    POUT("----------------------------------------\n");
     PERR("done\n");
     PERR("Finalizing ... ");
     MPI_Finalize();

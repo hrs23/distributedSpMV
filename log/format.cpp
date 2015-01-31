@@ -1,23 +1,29 @@
 
+#include <map>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstdlib>
+#include <sstream>
 using namespace std;
 int main (int argc, char *argv[]) {
     if (argc != 2) {
         printf("Usage: %s <log file>\n", argv[0]);
+        exit(1);
     }
     ifstream ifs(argv[1]);
     string line;
     string matrix;
     string performance;
+    map<string, string> data;
     while (getline(ifs, line)) {
-        if (line.find(".mtx") != string::npos) {
-            matrix = line;
+        if (line == "----------------------------------------") {
+            cout << data["Matrix"] << " " << data["GFLOPS"] << endl;
+            continue;
         }
-        if (line.find("GFLOPS") != string::npos) {
-            performance = line;
-            cout << matrix.substr(0, matrix.size()-1) + " " << performance.substr(performance.find("GFLOPS")+6) << endl;
-        }
+        stringstream ss(line);
+        string key, val;
+        ss >> key >> val;
+        data[key] = val;
     }
 }
