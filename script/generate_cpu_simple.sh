@@ -14,7 +14,7 @@ do
     echo "\
 #!/bin/bash
 #SBATCH -J \"SPMV-CPU\"
-#SBATCH -p normal
+#SBATCH -p mixed
 #SBATCH -N ${N}
 #SBATCH -n ${p}
 #SBATCH --ntasks-per-node=2
@@ -26,7 +26,7 @@ do
 MATRIX_DIR=${SPMV_DIR}/matrix/
 PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
 SPMV=${SPMV_DIR}/bin/spmv
-LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-`date +%y-%m-%d`.tsv
+LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-p$p-`date +%y-%m-%d`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2

@@ -4,16 +4,16 @@ if [ -z '$SPMV_DIR' ]; then
     exit 
 fi
 MAX_NPROC=64
-DISTRIBUTE_METHOD=hypergraph
+DISTRIBUTE_METHOD=simple
 for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
 do
 
-    RUN_SCRIPT=$SPMV_DIR/script/cpu-$DISTRIBUTE_METHOD/run_p${p}.sh
+    RUN_SCRIPT=$SPMV_DIR/script/mic-$DISTRIBUTE_METHOD/run_p${p}.sh
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
     echo "\
 #!/bin/bash
-#SBATCH -J \"SPMV-CPU\"
-#SBATCH -p mixed
+#SBATCH -J \"SPMV-MIC\"
+#SBATCH -p mic
 #SBATCH -N ${N}
 #SBATCH -n ${p}
 #SBATCH --ntasks-per-node=2
@@ -25,19 +25,24 @@ do
 MATRIX_DIR=${SPMV_DIR}/matrix/
 PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
 SPMV=${SPMV_DIR}/bin/spmv
-LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-p$p-`date +%y-%m-%d`.tsv
+LOG=${SPMV_DIR}/log/mic-$DISTRIBUTE_METHOD-p$p-`date +%y-%m-%d`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
-cmake .
-make
+#cmake .
+#make
+export MIC_PPN=1
+export I_MPI_MIC=enable
 export OMP_NUM_THREADS=10
 export KMP_AFFINITY=compact
 
 matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
+pdcp -w \$SLURM_JOB_NODELIST -R ssh $SPMV_DIR/bin/spmv.mic /mic-work/\$USER
 for matrix in \${matrices}
 do
-    mpirun -np ${p} \$SPMV \$PARTITION_DIR/\$matrix \$MATRIX_DIR/\$matrix >> \$LOG
+    mpirun $SPMV_DIR/script/copy-part.sh \$matrix
+    /opt/slurm/default/local/bin/mpirun-mic2 -m \"/mic-work/\$USER/spmv /mic-work/\$USER/\$matrix\" > \$LOG
+    rpdcp -w \$SLURM_JOB_NODELIST -R ssh /mic-work/\$USER/\$LOG $SPMV_DIR/log/
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}

@@ -180,7 +180,7 @@ void PrintResult (SparseMatrix &A, Vector &y) {
 }
 
 
-bool VerifySpMV (const string &mtxFile, const SparseMatrix &A, const Vector &y) {
+bool VerifySpMV (const char *mtxFile, const SparseMatrix &A, const Vector &y) {
     bool res = true;
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -241,13 +241,6 @@ bool VerifySpMV (const string &mtxFile, const SparseMatrix &A, const Vector &y) 
         }
     }
     return res;
-}
-
-
-double GetSynchronizedTime () {
-    double t = MPI_Wtime();
-    MPI_Bcast(&t, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    return t;
 }
 
 void DeleteSparseMatrix (SparseMatrix & A) {

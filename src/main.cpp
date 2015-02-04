@@ -26,12 +26,13 @@ int main (int argc, char *argv[]) {
         printf("Usage: %s <prefix of part file (i.e. 'partition/test.mtx')> [matrix file (to verify)]\n", argv[0]);
         exit(1);
     }
-    char *mtxFile;
+    string mtxFile;
     bool verify = false;
     if (argc == 3) {
         verify = true;
         mtxFile = argv[2];
     }
+    string mtxName = GetBasename(argv[1]);
     MPI_Init(&argc, &argv);
     //------------------------------
     // INIT
@@ -39,8 +40,8 @@ int main (int argc, char *argv[]) {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    if (rank == 0) fprintf(stderr, "Begin %s\n", mtxFile);
-    string partFile = string(argv[1]) + "-" + to_string(size) + "-" + to_string(rank) + ".part"; 
+    if (rank == 0) fprintf(stderr, "Begin %s\n", mtxName.c_str());
+    string partFile = string(argv[1]) + "-" + to_string(static_cast<long long>(size)) + "-" + to_string(static_cast<long long>(rank)) + ".part"; 
     PERR("Loading sparse matrix and vector ... ");
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     SparseMatrix A;
@@ -51,33 +52,67 @@ int main (int argc, char *argv[]) {
     PERR("done\n");
 
     //------------------------------
-    // SpMV
+    // SpMV (Asynchronous)
     //------------------------------
     PERR("Computing SpMV ... ");
     timingDetail[TIMING_TOTAL_SPMV] = "Total SpMV";
-    timingDetail[TIMING_TOTAL_COMMUNICATION] = "Total Communication";
-    timingDetail[TIMING_TOTAL_COMPUTATION]  = "Total Computation";
-    timingDetail[TIMING_INTERNAL_COMPUTATION]  = "Internal Computation";
-    timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "External Computation";
-    timingDetail[TIMING_PACKING] = "Packing";
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
         MPI_Barrier(MPI_COMM_WORLD); 
-        double tmp = -MPI_Wtime();
-        SpMV(A, x, y);
-        MPI_Barrier(MPI_COMM_WORLD); 
-        tmp += MPI_Wtime();
-        if (!i || timing[TIMING_TOTAL_SPMV] > tmp) {
-            timing[TIMING_TOTAL_SPMV] = tmp;
-            timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION];
-            timing[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_TOTAL_COMPUTATION];
-            timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION];
-            timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION];
-            timing[TIMING_PACKING] = timingTemp[TIMING_PACKING];
+        double tmp = 0;
+        double elapsedTime = GetSynchronizedTime();
+        int nLoop = 0;
+        while (GetSynchronizedTime() < elapsedTime + 1.0)  {
+            tmp -= MPI_Wtime();
+            SpMV(A, x, y);
+            MPI_Barrier(MPI_COMM_WORLD); 
+            tmp += MPI_Wtime();
+            nLoop++;
+        }
+        if (!i || timing[TIMING_TOTAL_SPMV] > tmp/nLoop) {
+            timing[TIMING_TOTAL_SPMV] = tmp / nLoop;
         }
     }
     PERR("done\n");
 
 
+    //------------------------------
+    // SpMV (Synchronous)
+    //------------------------------
+
+    PERR("Computing SpMV_measurement ... ");
+    timingDetail[TIMING_TOTAL_COMMUNICATION] = "Total Communication";
+    timingDetail[TIMING_TOTAL_COMPUTATION]  = "Total Computation";
+    timingDetail[TIMING_INTERNAL_COMPUTATION]  = "Internal Computation";
+    timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "External Computation";
+    timingDetail[TIMING_PACKING] = "Packing";
+    double bestPerformance;
+    for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
+        double tmp = 0;
+        double elapsedTime = GetSynchronizedTime();
+        int nLoop = 0;
+
+        timingTemp[TIMING_TOTAL_COMMUNICATION] = 0;
+        timingTemp[TIMING_TOTAL_COMPUTATION] = 0;
+        timingTemp[TIMING_INTERNAL_COMPUTATION] = 0;
+        timingTemp[TIMING_EXTERNAL_COMPUTATION] = 0;
+        timingTemp[TIMING_PACKING] = 0;
+        while (GetSynchronizedTime() < elapsedTime + 1.0)  {
+            tmp -= MPI_Wtime();
+            SpMV_measurement(A, x, y);
+            MPI_Barrier(MPI_COMM_WORLD); 
+            tmp += MPI_Wtime();
+            nLoop++;
+        }
+        if (!i || bestPerformance > tmp/nLoop) {
+            bestPerformance = tmp;
+            timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION] / nLoop;
+            timing[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_TOTAL_COMPUTATION] / nLoop;
+            timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] / nLoop;
+            timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION] / nLoop;
+            timing[TIMING_PACKING] = timingTemp[TIMING_PACKING] / nLoop;
+        }
+    }
+    PERR("done\n");
     //------------------------------
     // DELETE
     //------------------------------
@@ -123,11 +158,13 @@ int main (int argc, char *argv[]) {
     //------------------------------
     PERR("Reporting ... ");
 #ifdef PRINT_HOSTNAME
-        PrintHostName();
+    PrintHostName();
 #endif
     if (rank == 0) {
-        printf("%20s\t%s\n", "Matrix", GetBasename(mtxFile).c_str());
-        printf("%20s\t%d\n", "Number Of Process", size);
+        printf("%20s\t%s\n", "Matrix", mtxName.c_str());
+        printf("%20s\t%d\n", "NumberOfProcess", size);
+        printf("%20s\t%d\n", "NumberOfRows", A.globalNumberOfRows);
+        printf("%20s\t%d\n", "NumberOfNonzeros", A.globalNumberOfNonzeros);
 #ifdef PRINT_PERFORMANCE
         printf("%20s\t%.10lf\n", "GFLOPS", A.globalNumberOfNonzeros * 2 / timing[TIMING_TOTAL_SPMV] / 1e9);
         for (int i = 0; i < NUMBER_OF_TIMING; i++) {

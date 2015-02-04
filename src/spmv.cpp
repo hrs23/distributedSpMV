@@ -16,7 +16,66 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	//==============================
 	// Packing
 	//==============================
-    timingTemp[TIMING_PACKING] = -MPI_Wtime();
+	double* const xv = x.values;
+    double *sendBuffer = A.sendBuffer;
+#pragma omp for
+	for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
+	//==============================
+	// Begin Asynchronouse Communication
+	//==============================
+	const int MPI_MY_TAG = 141421356;
+	MPI_Request *recvRequest = new MPI_Request[A.numberOfRecvNeighbors];
+	MPI_Request *sendRequest = new MPI_Request[A.numberOfSendNeighbors];
+	double *x_external = (double *) xv + A.localNumberOfRows;
+	for (int i = 0; i < A.numberOfRecvNeighbors; i++) {
+		int nRecv = A.recvLength[i];
+        int src = A.recvNeighbors[i];
+		MPI_Irecv(x_external, nRecv, MPI_DOUBLE, src, MPI_MY_TAG, MPI_COMM_WORLD, recvRequest+i);
+		x_external += nRecv;
+	}
+	for (int i = 0; i < A.numberOfSendNeighbors; i++) {
+		int nSend = A.sendLength[i];
+        int dst = A.sendNeighbors[i];
+		MPI_Isend(sendBuffer, nSend, MPI_DOUBLE, dst, MPI_MY_TAG, MPI_COMM_WORLD, &sendRequest[i]);
+		sendBuffer += nSend;
+	}
+	//==============================
+	// Compute Internal
+	//==============================
+	{
+		SpMVInternal(A, x, y);
+	}
+	//==============================
+	// Wait Asynchronous Communication
+	//==============================
+	for (int i = 0; i < A.numberOfRecvNeighbors; i++) {
+		MPI_Status status;
+		if (MPI_Wait(recvRequest+i, &status)) {
+			std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+			std::exit(-1);
+		}
+	}
+	//==============================
+	// Compute External
+	//==============================
+	{
+		SpMVExternal(A, x, y);
+	}
+	delete [] recvRequest;
+	delete [] sendRequest;
+	return 0;
+
+}
+int SpMV_measurement (const SparseMatrix &A, Vector &x, Vector &y) {
+    /*
+	int size, rank;
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    */
+	//==============================
+	// Packing
+	//==============================
+    timingTemp[TIMING_PACKING] -= MPI_Wtime();
     MPI_Barrier(MPI_COMM_WORLD);
 	double* const xv = x.values;
     double *sendBuffer = A.sendBuffer;
@@ -27,7 +86,7 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	//==============================
 	// Begin Asynchronouse Communication
 	//==============================
-    timingTemp[TIMING_TOTAL_COMMUNICATION] = -MPI_Wtime();
+    timingTemp[TIMING_TOTAL_COMMUNICATION] -= MPI_Wtime();
 	const int MPI_MY_TAG = 141421356;
 	MPI_Request *recvRequest = new MPI_Request[A.numberOfRecvNeighbors];
 	MPI_Request *sendRequest = new MPI_Request[A.numberOfSendNeighbors];
@@ -47,15 +106,6 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
     MPI_Barrier(MPI_COMM_WORLD);
     timingTemp[TIMING_TOTAL_COMMUNICATION] += MPI_Wtime();
 	//==============================
-	// Compute Internal
-	//==============================
-    timingTemp[TIMING_INTERNAL_COMPUTATION] = -MPI_Wtime();
-	{
-		SpMVInternal(A, x, y);
-	}
-    MPI_Barrier(MPI_COMM_WORLD);
-    timingTemp[TIMING_INTERNAL_COMPUTATION] += MPI_Wtime();
-	//==============================
 	// Wait Asynchronous Communication
 	//==============================
     timingTemp[TIMING_TOTAL_COMMUNICATION] -= MPI_Wtime();
@@ -69,6 +119,15 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
     MPI_Barrier(MPI_COMM_WORLD);
     timingTemp[TIMING_TOTAL_COMMUNICATION] += MPI_Wtime();
 	//==============================
+	// Compute Internal
+	//==============================
+    timingTemp[TIMING_INTERNAL_COMPUTATION] -= MPI_Wtime();
+	{
+		SpMVInternal(A, x, y);
+	}
+    MPI_Barrier(MPI_COMM_WORLD);
+    timingTemp[TIMING_INTERNAL_COMPUTATION] += MPI_Wtime();
+	//==============================
 	// Compute External
 	//==============================
     timingTemp[TIMING_EXTERNAL_COMPUTATION] -= MPI_Wtime();
@@ -77,7 +136,7 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	}
     MPI_Barrier(MPI_COMM_WORLD);
     timingTemp[TIMING_EXTERNAL_COMPUTATION] += MPI_Wtime();
-    timingTemp[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] + 
+    timingTemp[TIMING_TOTAL_COMPUTATION] += timingTemp[TIMING_INTERNAL_COMPUTATION] + 
                                            timingTemp[TIMING_EXTERNAL_COMPUTATION];
 	delete [] recvRequest;
 	delete [] sendRequest;

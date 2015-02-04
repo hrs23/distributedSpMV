@@ -66,6 +66,6 @@ ostream& operator << (ostream &os, const pair<T, S> &p) {
     return os; 
 }
 
-inline string to_string (int n) {
+/*inline string to_string (int n) {
     return to_string(static_cast<long long>(n));
-}
+}*/
