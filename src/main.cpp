@@ -69,7 +69,7 @@ int main (int argc, char *argv[]) {
             nLoop++;
         }
         tmp += MPI_Wtime();
-        if (!i || timing[TIMING_TOTAL_SPMV] > tmp/nLoop) {
+        if (!i || timing[TIMING_TOTAL_SPMV] > tmp / nLoop) {
             timing[TIMING_TOTAL_SPMV] = tmp / nLoop;
         }
     }
@@ -77,7 +77,7 @@ int main (int argc, char *argv[]) {
 
 
     //------------------------------
-    // SpMV (Synchronous)
+    // SpMV_measure (Synchronous)
     //------------------------------
 
     PERR("Computing SpMV_measurement ... ");

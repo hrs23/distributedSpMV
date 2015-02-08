@@ -7,8 +7,6 @@
 #include "vector.h"
 using namespace std;
 int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     double *xv = x.values;
     double *yv = y.values;
     double ALPHA = 1;
@@ -22,15 +20,10 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     MKL_INT *ptr_e = ptr_b + 1;
     char transa = 'N';
     char *matdescra = "GLNC";
-    MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
     mkl_dcsrmv(&transa, &nrow, &ncol, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
     return 0;
 }
 int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
     double *xv = x.values;
     double *yv = y.values;
     double ALPHA = 1;
