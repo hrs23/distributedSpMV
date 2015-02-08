@@ -112,7 +112,7 @@ int SpMV_measurement (const SparseMatrix &A, Vector &x, Vector &y) {
 	for (int i = 0; i < A.numberOfRecvNeighbors; i++) {
 		MPI_Status status;
 		if (MPI_Wait(recvRequest+i, &status)) {
-			std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+			std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
 			std::exit(-1);
 		}
 	}
@@ -136,8 +136,6 @@ int SpMV_measurement (const SparseMatrix &A, Vector &x, Vector &y) {
 	}
     MPI_Barrier(MPI_COMM_WORLD);
     timingTemp[TIMING_EXTERNAL_COMPUTATION] += MPI_Wtime();
-    timingTemp[TIMING_TOTAL_COMPUTATION] += timingTemp[TIMING_INTERNAL_COMPUTATION] + 
-                                           timingTemp[TIMING_EXTERNAL_COMPUTATION];
 	delete [] recvRequest;
 	delete [] sendRequest;
 	return 0;

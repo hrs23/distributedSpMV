@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -16,7 +17,7 @@ using namespace std;
 void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
 void GetSimplePartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
 void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const string &inputFile, const string &outputDir);
-
+void CreateStatFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const string &inputFile, const string &outputDir);
 int main(int argc, char *argv[])
 {
     if (argc != 5) {
@@ -81,10 +82,12 @@ int main(int argc, char *argv[])
         memset(idx2part, 0, nCell * sizeof(int));
     }
     CreatePartitionFiles(nPart, elements, nRow, nCol, nNnz, idx2part, matrixFile, outputDir);
+    CreateStatFiles(nPart, elements, nRow, nCol, nNnz, idx2part, matrixFile, outputDir);
 
 //    PaToH_Free();
     return 0;
 }
+
 
 void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part) {
 
@@ -268,4 +271,58 @@ void CreatePartitionFiles (int nPart, const vector<Element> &elements, int nRow,
         }
         ofs.close();
     }
+}
+void CreateStatFiles (int nPart, const vector<Element> &elements, int nRow, int nCol, int nNnz, int *idx2part, const string &inputFile, const string &outputDir) {
+    string file = GetBasename(inputFile) + "-" + to_string(static_cast<long long>(nPart)) + ".stat";
+    ofstream ofs(outputDir + "/" + file);
+    cout << outputDir + "/" + file << endl;
+
+    ofs << "#Weight" << endl;
+    vector<int> weight(nRow);
+    for (int i = 0; i < elements.size(); i++) {
+        weight[elements[i].row]++;
+    }
+    vector<int> totalWeight(nPart);
+    for (int i = 0; i < nRow; i++) {
+        totalWeight[idx2part[i]] += weight[i];
+    }
+    ofs << "max" << "\t" << *max_element(totalWeight.begin(), totalWeight.end()) << endl;
+    ofs << "min" << "\t" << *min_element(totalWeight.begin(), totalWeight.end()) << endl;
+    ofs << "ave" << "\t" << accumulate(totalWeight.begin(), totalWeight.end(), 0) / static_cast<double>(nPart) << endl;
+
+    ofs << "#Neighbor" << endl;
+    vector< vector<int> > cost(nPart, vector<int>(nPart));
+    for (int i = 0; i < elements.size(); i++) {
+        int row = elements[i].row, col = elements[i].col;
+        int src = idx2part[col], dst = idx2part[row];
+        if (src != dst) cost[src][dst]++;
+    }
+    vector<int> nNeighbor(nPart);
+    for (int i = 0; i < nPart; i++) {
+        for (int j = 0; j < nPart; j++) {
+            if (cost[i][j]) nNeighbor[i]++;
+        }
+    }
+    ofs << "max" << "\t" << *max_element(nNeighbor.begin(), nNeighbor.end()) << endl;
+    ofs << "min" << "\t" << *min_element(nNeighbor.begin(), nNeighbor.end()) << endl;
+    ofs << "ave" << "\t" << accumulate(nNeighbor.begin(), nNeighbor.end(), 0) / static_cast<double>(nPart) << endl;
+
+    ofs << "#SendCost" << endl;
+    vector<int> sendCost(nPart);
+    vector<int> recvCost(nPart);
+    for (int i = 0; i < nPart; i++) {
+        for (int j = 0; j < nPart; j++) {
+            sendCost[i] += cost[i][j];
+            recvCost[i] += cost[j][i];
+        }
+    }
+    ofs << "max" << "\t" << *max_element(sendCost.begin(), sendCost.end()) << endl;
+    ofs << "min" << "\t" << *min_element(sendCost.begin(), sendCost.end()) << endl;
+    ofs << "ave" << "\t" << accumulate(sendCost.begin(), sendCost.end(), 0) / static_cast<double>(nPart) << endl;
+
+    ofs << "#RecvCost" << endl;
+    ofs << "max" << "\t" << *max_element(recvCost.begin(), recvCost.end()) << endl;
+    ofs << "min" << "\t" << *min_element(recvCost.begin(), recvCost.end()) << endl;
+    ofs << "ave" << "\t" << accumulate(recvCost.begin(), recvCost.end(), 0) / static_cast<double>(nPart) << endl;
+    ofs.close();
 }

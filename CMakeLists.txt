@@ -5,8 +5,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 # -- COMA --
 #SET(CMAKE_CXX_COMPILER "/app/intel/impi/4.1.3.048/intel64/bin/mpiicpc") 
 SET(CMAKE_CXX_COMPILER "mpiicpc") 
-#SET(CMAKE_CXX_FLAGS_RELEASE "-xHOST -O3 -ipo -mkl -fopenmp -std=c++11 -Wall")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ipo -mkl -fopenmp -std=c++11 -Wall")
+
+SET(CMAKE_CXX_FLAGS_RELEASE "-xHOST -O3 -ipo -mkl -fopenmp -std=c++11 -Wall")
+#SET(CMAKE_CXX_FLAGS_RELEASE "-mmic -O3 -ipo -mkl -fopenmp -std=c++11 -Wall")
+
 SET(CMAKE_CXX_FLAGS_DEBUG "-mkl -fopenmp -std=c++11 -Wall -g")
 SET(CMAKE_BUILD_TYPE RELEASE)
 PROJECT(distributedSpMV)
@@ -31,7 +33,7 @@ ADD_EXECUTABLE(${TARGET} ${SOURCE})
 TARGET_LINK_LIBRARIES(${TARGET} ${LIBRARY})
 
 # TARGET = spmv
-SET(TARGET spmv)
+SET(TARGET spmv.mic)
 SET(SOURCE 
     src/main.cpp
     src/util.cpp

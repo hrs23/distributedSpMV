@@ -18,7 +18,7 @@ do
 #SBATCH -n ${p}
 #SBATCH --ntasks-per-node=2
 #SBATCH --cpus-per-task=10
-#SBATCH -t 10:00:00
+#SBATCH -t 03:00:00
 #SBATCH -o stdout
 #SBATCH -e stderr
 #SBATCH -m block

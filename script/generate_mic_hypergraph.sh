@@ -4,7 +4,7 @@ if [ -z '$SPMV_DIR' ]; then
     exit 
 fi
 MAX_NPROC=64
-DISTRIBUTE_METHOD=simple
+DISTRIBUTE_METHOD=hypergraph
 for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
 do
 

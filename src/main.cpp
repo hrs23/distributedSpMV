@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <omp.h>
 #include <mpi.h>
 #include "sparse_matrix.h"
 #include "vector.h"
@@ -61,13 +62,13 @@ int main (int argc, char *argv[]) {
         double tmp = 0;
         double elapsedTime = GetSynchronizedTime();
         int nLoop = 0;
+        tmp -= MPI_Wtime();
         while (GetSynchronizedTime() < elapsedTime + 1.0)  {
-            tmp -= MPI_Wtime();
             SpMV(A, x, y);
             MPI_Barrier(MPI_COMM_WORLD); 
-            tmp += MPI_Wtime();
             nLoop++;
         }
+        tmp += MPI_Wtime();
         if (!i || timing[TIMING_TOTAL_SPMV] > tmp/nLoop) {
             timing[TIMING_TOTAL_SPMV] = tmp / nLoop;
         }
@@ -85,6 +86,10 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_INTERNAL_COMPUTATION]  = "Internal Computation";
     timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "External Computation";
     timingDetail[TIMING_PACKING] = "Packing";
+    // TODO:
+    /*
+    SpMV_measurement(A, x, y);
+    */
     double bestPerformance;
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
         double tmp = 0;
@@ -104,12 +109,13 @@ int main (int argc, char *argv[]) {
             nLoop++;
         }
         if (!i || bestPerformance > tmp/nLoop) {
-            bestPerformance = tmp;
+            bestPerformance = tmp / nLoop;
             timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION] / nLoop;
-            timing[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_TOTAL_COMPUTATION] / nLoop;
             timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] / nLoop;
             timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION] / nLoop;
             timing[TIMING_PACKING] = timingTemp[TIMING_PACKING] / nLoop;
+            timingTemp[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] + 
+                                                   timingTemp[TIMING_EXTERNAL_COMPUTATION];
         }
     }
     PERR("done\n");
@@ -160,9 +166,11 @@ int main (int argc, char *argv[]) {
 #ifdef PRINT_HOSTNAME
     PrintHostName();
 #endif
+    
     if (rank == 0) {
         printf("%20s\t%s\n", "Matrix", mtxName.c_str());
-        printf("%20s\t%d\n", "NumberOfProcess", size);
+        printf("%20s\t%d\n", "NumberOfProcesses", size);
+        printf("%20s\t%d\n", "NumberOfThreads",  omp_get_max_threads());
         printf("%20s\t%d\n", "NumberOfRows", A.globalNumberOfRows);
         printf("%20s\t%d\n", "NumberOfNonzeros", A.globalNumberOfNonzeros);
 #ifdef PRINT_PERFORMANCE

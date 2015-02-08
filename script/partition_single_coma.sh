@@ -34,13 +34,6 @@ do
     done
 done
 
-############################################
-# Delete!!!
-exit
-############################################
-
-
-
 PARTITION_METHOD=hypergraph
 matrices=`ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {}`
 for matrix in $matrices

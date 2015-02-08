@@ -16,3 +16,4 @@ log/*
 script/cpu/*.sh
 *.part
 script/*/*.sh
+*.stat
