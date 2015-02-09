@@ -22,7 +22,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BINARY_PATH})
 INCLUDE_DIRECTORIES(${INCLUDE_PATH})
 LINK_DIRECTORIES(${LIBRARY_PATH})
 
-# TARGET = partition
+# TARGET : partition
 SET(TARGET partition)
 SET(SOURCE  
     src/partition.cpp
@@ -32,8 +32,8 @@ SET(LIBRARY patoh)
 ADD_EXECUTABLE(${TARGET} ${SOURCE})
 TARGET_LINK_LIBRARIES(${TARGET} ${LIBRARY})
 
-# TARGET = spmv
-SET(TARGET spmv.mic)
+# TARGET : spmv
+SET(TARGET spmv)
 SET(SOURCE 
     src/main.cpp
     src/util.cpp

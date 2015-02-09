@@ -234,7 +234,7 @@ bool VerifySpMV (const string &mtxFile, const SparseMatrix &A, const Vector &y) 
             //sum += val[j] * 1;
         }
         double relative_error = abs(abs(result[i] - sum) / result[i]);
-        const double EPS = 1e-5;
+        const double EPS = 1e-8;
         if (relative_error > EPS)  {
             if (rank == 0) cerr << "Result is wrong at " << i << " expected value: " << sum << " returned value: " << result[i] << " relative error: " << relative_error << " absolute error: " << abs(result[i]-sum) << endl;
             res = false;

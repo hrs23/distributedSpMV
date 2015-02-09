@@ -114,8 +114,8 @@ int main (int argc, char *argv[]) {
             timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] / nLoop;
             timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION] / nLoop;
             timing[TIMING_PACKING] = timingTemp[TIMING_PACKING] / nLoop;
-            timingTemp[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] + 
-                                                   timingTemp[TIMING_EXTERNAL_COMPUTATION];
+            timing[TIMING_TOTAL_COMPUTATION] = timing[TIMING_INTERNAL_COMPUTATION] + 
+                                                   timing[TIMING_EXTERNAL_COMPUTATION];
         }
     }
     PERR("done\n");
