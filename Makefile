@@ -5,8 +5,8 @@ LIBRARY_DIR = lib
 INCLUDE_DIR = include
 
 CXX = mpiicpc
-LDFLAGS = -mkl -L$(LIBRARY_DIR) -L$(OBJECT_DIR)
-CXXFLAGS =  -std=c++11 -Wall -O3 -mkl -fopenmp -I$(INCLUDE_DIR)
+LDFLAGS = -L$(LIBRARY_DIR) -L$(OBJECT_DIR)
+CXXFLAGS = -std=c++11 -ipo -Wall -O3 -mkl -fopenmp -I$(INCLUDE_DIR)
 
 vpath %.cpp $(SOURCE_DIR)
 partition_sources = partition.cpp util.cpp
@@ -26,12 +26,12 @@ all: $(TARGETS)
 ########################################
 # SPMV CPU 
 ########################################
-$(OBJECT_DIR)/%.o : CXXFLAGS += -xHOST -ipo
+$(OBJECT_DIR)/%.o : CXXFLAGS += -xHOST
 $(OBJECT_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(SPMV_CPU) : $(spmv_objects_cpu)
-	$(CXX) $(CXXFLAGS) -o $@ $(spmv_objects_cpu) $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 
 ########################################
@@ -42,15 +42,14 @@ $(OBJECT_DIR)/%.o.mic : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 $(SPMV_MIC) : CXXFLAGS += -mmic
 $(SPMV_MIC) : $(spmv_objects_mic)
-	$(CXX) $(CXXFLAGS) -o $@ $(spmv_objects_mic) $(LDFLAGS)
-
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 ########################################
 # Partition 
 ########################################
 $(PARTITION) : LDFLAGS += -lpatoh
 $(PARTITION) : $(partition_objects)
-	$(CXX) $(CXXFLAGS) -o $@ $(partition_objects) $(LDFLAGS) 
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) 
 
 check :
 	@echo $(objects)
