@@ -1,7 +1,6 @@
 *.out
 CMakeCache.txt
 CMakeFiles
-./Makefile
 test
 cmake_install.cmake
 hypergraph/*.u
@@ -17,3 +16,7 @@ script/cpu/*.sh
 *.part
 script/*/*.sh
 *.stat
+*.err
+*.out
+*.o
+*.o.mic

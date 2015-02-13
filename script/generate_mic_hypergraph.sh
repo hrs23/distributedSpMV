@@ -12,15 +12,15 @@ do
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
     echo "\
 #!/bin/bash
-#SBATCH -J \"SPMV-MIC\"
+#SBATCH -J \"SPMV-MH${p}\"
 #SBATCH -p mic
 #SBATCH -N ${N}
 #SBATCH -n ${p}
 #SBATCH --ntasks-per-node=2
 #SBATCH --cpus-per-task=10
 #SBATCH -t 03:00:00
-#SBATCH -o stdout
-#SBATCH -e stderr
+#SBATCH -o slurm/%j.out
+#SBATCH -e slurm/%j.err
 #SBATCH -m block
 MATRIX_DIR=${SPMV_DIR}/matrix/
 PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
@@ -29,8 +29,7 @@ LOG=${SPMV_DIR}/log/mic-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
-#cmake .
-#make
+make
 export MIC_PPN=1
 export I_MPI_MIC=enable
 export KMP_AFFINITY=compact
@@ -43,8 +42,6 @@ for matrix in \${matrices}
 do
     mpirun $SPMV_DIR/script/copy-part.sh \$matrix hypergraph
     /opt/slurm/default/local/bin/mpirun-mic2 -m \"/mic-work/\$USER/spmv.mic /mic-work/\$USER/\$matrix\" >> \$LOG
-    #mpirun $SPMV_DIR/script/copy-log.sh \$LOG $SPMV_DIR/log/
-    #rpdcp -w \$SLURM_JOB_NODELIST -R ssh /mic-work/\$USER/\$LOG $SPMV_DIR/log/
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}
