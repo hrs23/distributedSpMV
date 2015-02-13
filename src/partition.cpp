@@ -290,22 +290,30 @@ void CreateStatFiles (int nPart, const vector<Element> &elements, int nRow, int 
     ofs << "min" << "\t" << *min_element(totalWeight.begin(), totalWeight.end()) << endl;
     ofs << "ave" << "\t" << accumulate(totalWeight.begin(), totalWeight.end(), 0) / static_cast<double>(nPart) << endl;
 
-    ofs << "#Neighbor" << endl;
+    // Neighbor
     vector< vector<int> > cost(nPart, vector<int>(nPart));
     for (int i = 0; i < elements.size(); i++) {
         int row = elements[i].row, col = elements[i].col;
         int src = idx2part[col], dst = idx2part[row];
         if (src != dst) cost[src][dst]++;
     }
-    vector<int> nNeighbor(nPart);
+    vector<int> nSendNeighbor(nPart);
+    vector<int> nRecvNeighbor(nPart);
     for (int i = 0; i < nPart; i++) {
         for (int j = 0; j < nPart; j++) {
-            if (cost[i][j]) nNeighbor[i]++;
+            if (cost[i][j]) nSendNeighbor[i]++;
+            if (cost[j][i]) nRecvNeighbor[i]++;
         }
     }
-    ofs << "max" << "\t" << *max_element(nNeighbor.begin(), nNeighbor.end()) << endl;
-    ofs << "min" << "\t" << *min_element(nNeighbor.begin(), nNeighbor.end()) << endl;
-    ofs << "ave" << "\t" << accumulate(nNeighbor.begin(), nNeighbor.end(), 0) / static_cast<double>(nPart) << endl;
+    ofs << "#SendNeighbor" << endl;
+    ofs << "max" << "\t" << *max_element(nSendNeighbor.begin(), nSendNeighbor.end()) << endl;
+    ofs << "min" << "\t" << *min_element(nSendNeighbor.begin(), nSendNeighbor.end()) << endl;
+    ofs << "ave" << "\t" << accumulate(nSendNeighbor.begin(), nSendNeighbor.end(), 0) / static_cast<double>(nPart) << endl;
+
+    ofs << "#RecvNeighbor" << endl;
+    ofs << "max" << "\t" << *max_element(nRecvNeighbor.begin(), nRecvNeighbor.end()) << endl;
+    ofs << "min" << "\t" << *min_element(nRecvNeighbor.begin(), nRecvNeighbor.end()) << endl;
+    ofs << "ave" << "\t" << accumulate(nRecvNeighbor.begin(), nRecvNeighbor.end(), 0) / static_cast<double>(nPart) << endl;
 
     ofs << "#SendCost" << endl;
     vector<int> sendCost(nPart);

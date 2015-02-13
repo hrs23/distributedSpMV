@@ -33,6 +33,7 @@ int main (int argc, char *argv[]) {
         verify = true;
         mtxFile = argv[2];
     }
+    string partName = argv[1];
     string mtxName = GetBasename(argv[1]);
     MPI_Init(&argc, &argv);
     //------------------------------
@@ -63,9 +64,8 @@ int main (int argc, char *argv[]) {
         double elapsedTime = GetSynchronizedTime();
         int nLoop = 0;
         tmp -= MPI_Wtime();
-        while (GetSynchronizedTime() < elapsedTime + 1.0)  {
+        while (GetSynchronizedTime() < elapsedTime + 10.0)  {
             SpMV(A, x, y);
-            MPI_Barrier(MPI_COMM_WORLD); 
             nLoop++;
         }
         tmp += MPI_Wtime();
@@ -75,6 +75,17 @@ int main (int argc, char *argv[]) {
     }
     PERR("done\n");
 
+
+
+    //------------------------------
+    // Verify
+    //------------------------------
+    if (verify) {
+        PERR("Verifying ... ");
+        VerifySpMV(mtxFile, A, y);
+        MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
+        PERR("done\n");
+    }
 
     //------------------------------
     // SpMV_measure (Synchronous)
@@ -87,37 +98,54 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "External Computation";
     timingDetail[TIMING_PACKING] = "Packing";
     // TODO:
-    /*
-    SpMV_measurement(A, x, y);
-    */
-    double bestPerformance;
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
-        double tmp = 0;
-        double elapsedTime = GetSynchronizedTime();
-        int nLoop = 0;
-
-        timingTemp[TIMING_TOTAL_COMMUNICATION] = 0;
-        timingTemp[TIMING_TOTAL_COMPUTATION] = 0;
-        timingTemp[TIMING_INTERNAL_COMPUTATION] = 0;
-        timingTemp[TIMING_EXTERNAL_COMPUTATION] = 0;
-        timingTemp[TIMING_PACKING] = 0;
-        while (GetSynchronizedTime() < elapsedTime + 1.0)  {
-            tmp -= MPI_Wtime();
-            SpMV_measurement(A, x, y);
-            MPI_Barrier(MPI_COMM_WORLD); 
-            tmp += MPI_Wtime();
-            nLoop++;
-        }
-        if (!i || bestPerformance > tmp/nLoop) {
-            bestPerformance = tmp / nLoop;
-            timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION] / nLoop;
-            timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] / nLoop;
-            timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION] / nLoop;
-            timing[TIMING_PACKING] = timingTemp[TIMING_PACKING] / nLoop;
-            timing[TIMING_TOTAL_COMPUTATION] = timing[TIMING_INTERNAL_COMPUTATION] + 
-                                                   timing[TIMING_EXTERNAL_COMPUTATION];
+        SpMV_measurement_once(A, x, y);
+        if (!i) {
+            timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION];
+            timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION];
+            timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION];
+            timing[TIMING_PACKING] = timingTemp[TIMING_PACKING];
+            timing[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] + 
+                                               timingTemp[TIMING_EXTERNAL_COMPUTATION];
+        } else {
+            amin(timing[TIMING_TOTAL_COMMUNICATION], timingTemp[TIMING_TOTAL_COMMUNICATION]);
+            amin(timing[TIMING_INTERNAL_COMPUTATION], timingTemp[TIMING_INTERNAL_COMPUTATION]);
+            amin(timing[TIMING_EXTERNAL_COMPUTATION], timingTemp[TIMING_EXTERNAL_COMPUTATION]);
+            amin(timing[TIMING_PACKING], timingTemp[TIMING_PACKING]);
+            amin(timing[TIMING_TOTAL_COMPUTATION], timingTemp[TIMING_INTERNAL_COMPUTATION] + 
+                                                   timingTemp[TIMING_EXTERNAL_COMPUTATION]);
         }
     }
+    /*
+       double bestPerformance;
+       for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
+       double tmp = 0;
+       double elapsedTime = GetSynchronizedTime();
+       int nLoop = 0;
+
+       timingTemp[TIMING_TOTAL_COMMUNICATION] = 0;
+       timingTemp[TIMING_TOTAL_COMPUTATION] = 0;
+       timingTemp[TIMING_INTERNAL_COMPUTATION] = 0;
+       timingTemp[TIMING_EXTERNAL_COMPUTATION] = 0;
+       timingTemp[TIMING_PACKING] = 0;
+       while (GetSynchronizedTime() < elapsedTime + 1.0)  {
+       tmp -= MPI_Wtime();
+       SpMV_measurement(A, x, y);
+       MPI_Barrier(MPI_COMM_WORLD); 
+       tmp += MPI_Wtime();
+       nLoop++;
+       }
+       if (!i || bestPerformance > tmp/nLoop) {
+       bestPerformance = tmp / nLoop;
+       timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION] / nLoop;
+       timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] / nLoop;
+       timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION] / nLoop;
+       timing[TIMING_PACKING] = timingTemp[TIMING_PACKING] / nLoop;
+       timing[TIMING_TOTAL_COMPUTATION] = timing[TIMING_INTERNAL_COMPUTATION] + 
+       timing[TIMING_EXTERNAL_COMPUTATION];
+       }
+       }
+       */
     PERR("done\n");
     //------------------------------
     // DELETE
@@ -127,15 +155,6 @@ int main (int argc, char *argv[]) {
     DeleteVector(x);
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     PERR("done\n");
-
-    //------------------------------
-    // Verify
-    //------------------------------
-    PERR("Verifying ... ");
-    if (verify) VerifySpMV(mtxFile, A, y);
-    MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
-    PERR("done\n");
-
     /*
     //------------------------------
     // Print 
@@ -166,7 +185,7 @@ int main (int argc, char *argv[]) {
 #ifdef PRINT_HOSTNAME
     PrintHostName();
 #endif
-    
+
     if (rank == 0) {
         printf("%20s\t%s\n", "Matrix", mtxName.c_str());
         printf("%20s\t%d\n", "NumberOfProcesses", size);

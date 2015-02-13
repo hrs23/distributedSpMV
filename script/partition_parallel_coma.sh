@@ -27,7 +27,8 @@ PARTITION_METHOD=simple
 for ((npart=1; npart <= 64; npart *= 2))
 do
     echo "Partitioning to $npart with $PARTITION_METHOD ..."
-    ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ \
+    #ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ 
+    ls $SPMV_DIR/matrix/dense*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ \
     $SPMV_DIR/bin/partition $SPMV_DIR/matrix/@ $PARTITION_METHOD $npart "$SPMV_DIR/partition/$PARTITION_METHOD/"
 done
 
@@ -35,6 +36,7 @@ PARTITION_METHOD=hypergraph
 for ((npart=1; npart <= 64; npart *= 2))
 do
     echo "Partitioning to $npart with $PARTITION_METHOD ..."
-    ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ \
+    #ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ 
+    ls $SPMV_DIR/matrix/dense*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ \
         $SPMV_DIR/bin/partition $SPMV_DIR/matrix/@ $PARTITION_METHOD $npart "$SPMV_DIR/partition/$PARTITION_METHOD/"
 done

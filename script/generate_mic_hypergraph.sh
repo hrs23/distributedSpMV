@@ -41,7 +41,7 @@ matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 pdcp -w \$SLURM_JOB_NODELIST -R ssh $SPMV_DIR/bin/spmv.mic /mic-work/\$USER
 for matrix in \${matrices}
 do
-    mpirun $SPMV_DIR/script/copy-part.sh \$matrix
+    mpirun $SPMV_DIR/script/copy-part.sh \$matrix hypergraph
     /opt/slurm/default/local/bin/mpirun-mic2 -m \"/mic-work/\$USER/spmv.mic /mic-work/\$USER/\$matrix\" >> \$LOG
     #mpirun $SPMV_DIR/script/copy-log.sh \$LOG $SPMV_DIR/log/
     #rpdcp -w \$SLURM_JOB_NODELIST -R ssh /mic-work/\$USER/\$LOG $SPMV_DIR/log/

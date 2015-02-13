@@ -66,6 +66,9 @@ ostream& operator << (ostream &os, const pair<T, S> &p) {
     return os; 
 }
 
+
+template<class T> bool amax (T &a, const T &b) { if (a < b) { a = b; return 1; } return 0; }
+template<class T> bool amin (T &a, const T &b) { if (a > b) { a = b; return 1; } return 0; }
 /*inline string to_string (int n) {
     return to_string(static_cast<long long>(n));
 }*/
