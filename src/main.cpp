@@ -64,7 +64,7 @@ int main (int argc, char *argv[]) {
         double elapsedTime = GetSynchronizedTime();
         int nLoop = 0;
         tmp -= MPI_Wtime();
-        while (GetSynchronizedTime() < elapsedTime + 10.0)  {
+        while (GetSynchronizedTime() < elapsedTime + 1.0)  {
             SpMV(A, x, y);
             nLoop++;
         }
