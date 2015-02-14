@@ -116,36 +116,6 @@ int main (int argc, char *argv[]) {
                                                    timingTemp[TIMING_EXTERNAL_COMPUTATION]);
         }
     }
-    /*
-       double bestPerformance;
-       for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
-       double tmp = 0;
-       double elapsedTime = GetSynchronizedTime();
-       int nLoop = 0;
-
-       timingTemp[TIMING_TOTAL_COMMUNICATION] = 0;
-       timingTemp[TIMING_TOTAL_COMPUTATION] = 0;
-       timingTemp[TIMING_INTERNAL_COMPUTATION] = 0;
-       timingTemp[TIMING_EXTERNAL_COMPUTATION] = 0;
-       timingTemp[TIMING_PACKING] = 0;
-       while (GetSynchronizedTime() < elapsedTime + 1.0)  {
-       tmp -= MPI_Wtime();
-       SpMV_measurement(A, x, y);
-       MPI_Barrier(MPI_COMM_WORLD); 
-       tmp += MPI_Wtime();
-       nLoop++;
-       }
-       if (!i || bestPerformance > tmp/nLoop) {
-       bestPerformance = tmp / nLoop;
-       timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION] / nLoop;
-       timing[TIMING_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] / nLoop;
-       timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION] / nLoop;
-       timing[TIMING_PACKING] = timingTemp[TIMING_PACKING] / nLoop;
-       timing[TIMING_TOTAL_COMPUTATION] = timing[TIMING_INTERNAL_COMPUTATION] + 
-       timing[TIMING_EXTERNAL_COMPUTATION];
-       }
-       }
-       */
     PERR("done\n");
     //------------------------------
     // DELETE

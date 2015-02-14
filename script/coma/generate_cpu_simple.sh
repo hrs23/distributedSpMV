@@ -1,18 +1,19 @@
+
 #!/bin/bash
 if [ -z '$SPMV_DIR' ]; then
     echo 'Error: set \$SPMV_DIR'
     exit 
 fi
 MAX_NPROC=64
-DISTRIBUTE_METHOD=hypergraph
+DISTRIBUTE_METHOD=simple
 for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
 do
 
-    RUN_SCRIPT=$SPMV_DIR/script/cpu-$DISTRIBUTE_METHOD/run_p${p}.sh
+    RUN_SCRIPT=$SPMV_DIR/script/coma/cpu-$DISTRIBUTE_METHOD/run_p${p}.sh
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
     echo "\
 #!/bin/bash
-#SBATCH -J \"SPMV-CH${p}\"
+#SBATCH -J \"SPMV-CS${p}\"
 #SBATCH -p mixed
 #SBATCH -N ${N}
 #SBATCH -n ${p}
