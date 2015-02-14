@@ -28,30 +28,32 @@ all: $(TARGETS)
 ########################################
 # SPMV CPU 
 ########################################
-$(OBJECT_DIR)/%.o.cpu : CXXFLAGS += -xHOST -mkl -DCPU 
+$(OBJECT_DIR)/%.o.cpu : CXXFLAGS += -xHOST -DCPU 
 $(OBJECT_DIR)/%.o.cpu : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(SPMV_CPU) : CXXFLAGS += -mkl
 $(SPMV_CPU) : $(spmv_objects_cpu)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 ########################################
 # SPMV MIC
 ########################################
-$(OBJECT_DIR)/%.o.mic : CXXFLAGS += -mmic -mkl -DMIC
+$(OBJECT_DIR)/%.o.mic : CXXFLAGS += -mmic -DMIC
 $(OBJECT_DIR)/%.o.mic : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-$(SPMV_MIC) : CXXFLAGS += -mmic
+$(SPMV_MIC) : CXXFLAGS += -mmic -mkl
 $(SPMV_MIC) : $(spmv_objects_mic)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 ########################################
 # SPMV GPU 
 ########################################
-$(OBJECT_DIR)/%.o.gpu : CXXFLAGS += -xHOST -mkl -DGPU
+$(OBJECT_DIR)/%.o.gpu : CXXFLAGS += -xHOST -DGPU
 $(OBJECT_DIR)/%.o.gpu : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(SPMV_GPU) : CXXFLAGS += -mkl
 $(SPMV_GPU) : $(spmv_objects_gpu)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
