@@ -9,11 +9,6 @@
 #include "timing.h"
 using namespace std;
 int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
-    /*
-	int size, rank;
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    */
 	//==============================
 	// Packing
 	//==============================
@@ -67,12 +62,8 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
 	return 0;
 
 }
+/*
 int SpMV_measurement (const SparseMatrix &A, Vector &x, Vector &y) {
-    /*
-	int size, rank;
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    */
 	//==============================
 	// Packing
 	//==============================
@@ -142,13 +133,10 @@ int SpMV_measurement (const SparseMatrix &A, Vector &x, Vector &y) {
 	return 0;
 
 }
-
+*/
 int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
-    /*
-	int size, rank;
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    */
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     double* const xv = x.values;
     double *sendBuffer = A.sendBuffer;
 	//==============================
@@ -159,7 +147,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     begin = GetSynchronizedTime();
     elapsedTime = -MPI_Wtime();
     nLoop = 0;
-    while (GetSynchronizedTime() - begin < 10.0) {
+    while (GetSynchronizedTime() - begin < 1.0) {
 #pragma omp parallel for
         for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
         nLoop++;
@@ -174,8 +162,9 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     begin = GetSynchronizedTime();
     elapsedTime = -MPI_Wtime();
     nLoop = 0;
-    while (GetSynchronizedTime() - begin < 10.0) {
-        const int MPI_MY_TAG = 141421356;
+    while (GetSynchronizedTime() - begin < 1.0) {
+        fprintf(stderr, "rank %d in\n", rank);
+        const int MPI_MY_TAG = 141421356 + nLoop;
         MPI_Request *recvRequest = new MPI_Request[A.numberOfRecvNeighbors];
         MPI_Request *sendRequest = new MPI_Request[A.numberOfSendNeighbors];
         double *x_external = (double *) xv + A.localNumberOfRows;
@@ -186,12 +175,14 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
             MPI_Irecv(x_external, nRecv, MPI_DOUBLE, src, MPI_MY_TAG, MPI_COMM_WORLD, recvRequest+i);
             x_external += nRecv;
         }
+        fprintf(stderr, "rank %d isend\n", rank);
         for (int i = 0; i < A.numberOfSendNeighbors; i++) {
             int nSend = A.sendLength[i];
             int dst = A.sendNeighbors[i];
             MPI_Isend(sendBuffer, nSend, MPI_DOUBLE, dst, MPI_MY_TAG, MPI_COMM_WORLD, &sendRequest[i]);
             sendBuffer += nSend;
         }
+        fprintf(stderr, "rank %d irecv\n", rank);
         for (int i = 0; i < A.numberOfRecvNeighbors; i++) {
             MPI_Status status;
             if (MPI_Wait(recvRequest+i, &status)) {
@@ -199,6 +190,9 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
                 std::exit(-1);
             }
         }
+        fprintf(stderr, "rank %d wait\n", rank);
+        MPI_Barrier(MPI_COMM_WORLD);
+        fprintf(stderr, "rank %d barrier\n", rank);
         delete [] recvRequest;
         delete [] sendRequest;
         nLoop++;
@@ -212,7 +206,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     begin = GetSynchronizedTime();
     elapsedTime = -MPI_Wtime();
     nLoop = 0;
-    while (GetSynchronizedTime() - begin < 10.0) {
+    while (GetSynchronizedTime() - begin < 1.0) {
 		SpMVInternal(A, x, y);
         nLoop++;
     }
@@ -225,7 +219,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     begin = GetSynchronizedTime();
     elapsedTime = -MPI_Wtime();
     nLoop = 0;
-    while (GetSynchronizedTime() - begin < 10.0) {
+    while (GetSynchronizedTime() - begin < 1.0) {
 		SpMVExternal(A, x, y);
         nLoop++;
 	}

@@ -91,7 +91,7 @@ int main (int argc, char *argv[]) {
     // SpMV_measure (Synchronous)
     //------------------------------
 
-    PERR("Computing SpMV_measurement ... ");
+    PERR("Computing SpMV_measurement_once ... ");
     timingDetail[TIMING_TOTAL_COMMUNICATION] = "Total Communication";
     timingDetail[TIMING_TOTAL_COMPUTATION]  = "Total Computation";
     timingDetail[TIMING_INTERNAL_COMPUTATION]  = "Internal Computation";
