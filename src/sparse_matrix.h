@@ -32,4 +32,17 @@ struct SparseMatrix {
     int *localIndexOfSend;
     int *localIndexOfRecv;
     double *sendBuffer;
+
+
+#ifdef GPU
+    int *cuda_internalPtr;
+    int *cuda_internalIdx;
+    double *cuda_internalVal;
+    int *cuda_externalPtr;
+    int *cuda_externalIdx;
+    double *cuda_externalVal;
+    double *cuda_x_values;
+    double *cuda_y_values;
+
+#endif
 };

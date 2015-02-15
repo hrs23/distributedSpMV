@@ -22,3 +22,5 @@ run*.sh
 *.o.cpu
 *.o.mic
 *.o.gpu
+pbs/*.ER
+pbs/*.OU

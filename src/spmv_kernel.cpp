@@ -1,18 +1,26 @@
 #include <mpi.h>
 #include <iostream>
 #include <cstdio>
-#include <mkl.h>
 #include "spmv_kernel.h"
 #include "sparse_matrix.h"
 #include "vector.h"
+#if defined(MIC) || defined(CPU)
+#include <mkl.h>
+#endif
+#ifdef GPU
+#include <cuda_runtime_api.h>
+#include <cusparse_v2.h>
+#include <helper_cuda.h>
+#endif
 using namespace std;
 int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     double *xv = x.values;
     double *yv = y.values;
     double ALPHA = 1;
     double BETA = 0;
-    int nrow = A.localNumberOfRows;
-    int ncol = A.localNumberOfRows;
+    int nRow = A.localNumberOfRows;
+    int nNnz = A.internalPtr[nRow];
+#if defined(MIC) || defined(CPU)
     int *ptr = A.internalPtr;
     int *idx = A.internalIdx;
     double *val = A.internalVal;
@@ -20,7 +28,25 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     MKL_INT *ptr_e = ptr_b + 1;
     char transa = 'N';
     char *matdescra = "GLNC";
-    mkl_dcsrmv(&transa, &nrow, &ncol, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
+    mkl_dcsrmv(&transa, &nRow, &nRow, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
+#endif
+#ifdef GPU
+    int * cuda_ptr = A.cuda_internalPtr;
+    int * cuda_idx = A.cuda_internalIdx;
+    double * cuda_val = A.cuda_internalVal;
+    double * cuda_x = A.cuda_x_values;
+    double * cuda_y = A.cuda_y_values;
+
+    checkCudaErrors(cudaMemcpy((void *)cuda_x, xv, A.localNumberOfRows * sizeof(double), cudaMemcpyHostToDevice));
+    
+    ::cusparseHandle_t cusparse;
+    ::cusparseCreate(&cusparse);
+    ::cusparseMatDescr_t matDescr;
+    ::cusparseCreateMatDescr(&matDescr);
+    ::cusparseSetMatType(matDescr, CUSPARSE_MATRIX_TYPE_GENERAL);
+    ::cusparseSetMatIndexBase(matDescr, CUSPARSE_INDEX_BASE_ZERO);
+    ::cusparseDcsrmv(cusparse, CUSPARSE_OPERATION_NON_TRANSPOSE, nRow, nRow, nNnz, &ALPHA, matDescr, cuda_val, cuda_ptr, cuda_idx, cuda_x, &BETA, cuda_y);
+#endif
     return 0;
 }
 int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
@@ -28,8 +54,10 @@ int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
     double *yv = y.values;
     double ALPHA = 1;
     double BETA = 1;
-    int nrow = A.localNumberOfRows;
-    int ncol = A.localNumberOfRows + A.totalNumberOfRecv;
+    int nRow = A.localNumberOfRows;
+    int nCol = A.localNumberOfRows + A.totalNumberOfRecv;
+    int nNnz = A.internalPtr[nRow];
+#if defined(MIC) || defined(CPU)
     int *ptr = A.externalPtr;
     int *idx = A.externalIdx;
     double *val = A.externalVal;
@@ -37,6 +65,27 @@ int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
     MKL_INT *ptr_e = ptr_b + 1;
     char transa = 'N';
     char *matdescra = "GLNC";
-    mkl_dcsrmv(&transa, &nrow, &ncol, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
+    mkl_dcsrmv(&transa, &nRow, &nCol, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
+#endif
+
+#ifdef GPU
+    int * cuda_ptr = A.cuda_externalPtr;
+    int * cuda_idx = A.cuda_externalIdx;
+    double * cuda_val = A.cuda_externalVal;
+    double * cuda_x = A.cuda_x_values;
+    double * cuda_y = A.cuda_y_values;
+
+    checkCudaErrors(cudaMemcpy((void *)(cuda_x + A.localNumberOfRows), xv + A.localNumberOfRows, A.totalNumberOfRecv * sizeof(double), cudaMemcpyHostToDevice));
+
+    ::cusparseHandle_t cusparse;
+    ::cusparseCreate(&cusparse);
+    ::cusparseMatDescr_t matDescr;
+    ::cusparseCreateMatDescr(&matDescr);
+    ::cusparseSetMatType(matDescr, CUSPARSE_MATRIX_TYPE_GENERAL);
+    ::cusparseSetMatIndexBase(matDescr, CUSPARSE_INDEX_BASE_ZERO);
+    ::cusparseDcsrmv(cusparse, CUSPARSE_OPERATION_NON_TRANSPOSE, nRow, nCol, nNnz, &ALPHA, matDescr, cuda_val, cuda_ptr, cuda_idx, cuda_x, &BETA, cuda_y);
+
+    checkCudaErrors(cudaMemcpy((void *)yv, cuda_y, nRow * sizeof(double), cudaMemcpyDeviceToHost));
+#endif
     return 0;
 }

@@ -50,6 +50,9 @@ int main (int argc, char *argv[]) {
     Vector x, y;
     LoadInput(partFile, A, x);
     CreateZeroVector(y, A.localNumberOfRows);
+#ifdef GPU
+    SelectDevice();
+#endif
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     PERR("done\n");
 
