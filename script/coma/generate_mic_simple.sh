@@ -5,8 +5,12 @@ if [ -z '$SPMV_DIR' ]; then
 fi
 MAX_NPROC=64
 DISTRIBUTE_METHOD=simple
+MPIRUN_MIC=mpirun-mic
 for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
 do
+    if [ $p -gt 1 ]; then
+        MPIRUN_MIC=mpirun-mic2
+    fi
 
     RUN_SCRIPT=$SPMV_DIR/script/coma/mic-$DISTRIBUTE_METHOD/run_p${p}.sh
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
@@ -41,7 +45,7 @@ pdcp -w \$SLURM_JOB_NODELIST -R ssh $SPMV_DIR/bin/spmv.mic /mic-work/\$USER
 for matrix in \${matrices}
 do
     mpirun $SPMV_DIR/script/coma/copy-part.sh \$matrix simple
-    /opt/slurm/default/local/bin/mpirun-mic2 -m \"/mic-work/\$USER/spmv.mic /mic-work/\$USER/\$matrix\" >> \$LOG
+    /opt/slurm/default/local/bin/$MPIRUN_MIC -m \"/mic-work/\$USER/spmv.mic /mic-work/\$USER/\$matrix\" >> \$LOG
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}
