@@ -270,6 +270,15 @@ bool VerifySpMV (const string &mtxFile, const SparseMatrix &A, const Vector &y) 
 }
 
 
+void SelectDevice () {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#ifdef GPU
+    checkCudaErrors(cudaSetDevice(rank%GPU_PER_NODE));
+#endif
+}
+
+
 double GetSynchronizedTime () {
     double t = MPI_Wtime();
     MPI_Bcast(&t, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
