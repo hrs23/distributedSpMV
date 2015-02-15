@@ -13,6 +13,11 @@
 #include "sparse_matrix.h"
 #include "vector.h"
 #include "util.h"
+#ifdef GPU
+#include <cuda_runtime_api.h>
+#include <cusparse_v2.h>
+#include <helper_cuda.h>
+#endif
 using namespace std;
 
 
@@ -157,6 +162,27 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
         x.values[i] = A.local2global[i] + 1;
     }
     //fill(x.values, x.values + A.totalNumberOfUsedCols, 1);
+#ifdef GPU
+    int ip = A.internalPtr[A.localNumberOfRows];
+    int ep = A.externalPtr[A.localNumberOfRows];
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_internalPtr, (A.localNumberOfRows + 1) * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_internalIdx, ip * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_internalVal, ip * sizeof(double)));
+
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_externalPtr, (A.localNumberOfRows + 1) * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_externalIdx, ep * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_externalVal, ep * sizeof(double)));
+
+    checkCudaErrors(cudaMemcpy((void *)A.cuda_internalPtr, A.internalPtr, (A.localNumberOfRows + 1) * sizeof(int), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy((void *)A.cuda_internalIdx, A.internalIdx, ip * sizeof(int), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy((void *)A.cuda_internalVal, A.internalVal, ip * sizeof(double), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy((void *)A.cuda_externalPtr, A.externalPtr, (A.localNumberOfRows + 1) * sizeof(int), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy((void *)A.cuda_externalIdx, A.externalIdx, ep * sizeof(int), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy((void *)A.cuda_externalVal, A.externalVal, ep * sizeof(double), cudaMemcpyHostToDevice));
+
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_x_values, (A.localNumberOfRows + A.totalNumberOfRecv) * sizeof(double)));
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_y_values, A.localNumberOfRows * sizeof(double)));
+#endif
 }
 
 void CreateZeroVector (Vector &v, int length) {

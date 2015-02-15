@@ -17,7 +17,7 @@ do
 #PBS -S /bin/bash
 #PBS -N SPMV-CH${p}
 #PBS -A NUMLIB
-#PBS -q comaq
+#PBS -q comq
 #PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs
 #PBS -l walltime=03:00:00
 #PBS -l place=scatter
@@ -25,7 +25,8 @@ do
 #PBS -e pbs/
 
 . /opt/Modules/default/init/bash
-module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
+module load intel/14.0.4 intelmpi/5.0.0 mkl/11.1.3
+
 cd $SPMV_DIR
 
 MATRIX_DIR=${SPMV_DIR}/matrix/
