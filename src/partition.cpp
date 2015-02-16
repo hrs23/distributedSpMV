@@ -288,7 +288,7 @@ void CreateStatFiles (int nPart, const vector<Element> &elements, int nRow, int 
     }
     ofs << "max" << "\t" << *max_element(totalWeight.begin(), totalWeight.end()) << endl;
     ofs << "min" << "\t" << *min_element(totalWeight.begin(), totalWeight.end()) << endl;
-    ofs << "ave" << "\t" << accumulate(totalWeight.begin(), totalWeight.end(), 0) / static_cast<double>(nPart) << endl;
+    ofs << "ave" << "\t" << accumulate(totalWeight.begin(), totalWeight.end(), 0) / nPart << endl;
 
     // Neighbor
     vector< vector<int> > cost(nPart, vector<int>(nPart));
@@ -308,12 +308,12 @@ void CreateStatFiles (int nPart, const vector<Element> &elements, int nRow, int 
     ofs << "#SendNeighbor" << endl;
     ofs << "max" << "\t" << *max_element(nSendNeighbor.begin(), nSendNeighbor.end()) << endl;
     ofs << "min" << "\t" << *min_element(nSendNeighbor.begin(), nSendNeighbor.end()) << endl;
-    ofs << "ave" << "\t" << accumulate(nSendNeighbor.begin(), nSendNeighbor.end(), 0) / static_cast<double>(nPart) << endl;
+    ofs << "ave" << "\t" << accumulate(nSendNeighbor.begin(), nSendNeighbor.end(), 0) / nPart << endl;
 
     ofs << "#RecvNeighbor" << endl;
     ofs << "max" << "\t" << *max_element(nRecvNeighbor.begin(), nRecvNeighbor.end()) << endl;
     ofs << "min" << "\t" << *min_element(nRecvNeighbor.begin(), nRecvNeighbor.end()) << endl;
-    ofs << "ave" << "\t" << accumulate(nRecvNeighbor.begin(), nRecvNeighbor.end(), 0) / static_cast<double>(nPart) << endl;
+    ofs << "ave" << "\t" << accumulate(nRecvNeighbor.begin(), nRecvNeighbor.end(), 0) / nPart << endl;
 
     ofs << "#SendCost" << endl;
     vector<int> sendCost(nPart);
@@ -326,11 +326,11 @@ void CreateStatFiles (int nPart, const vector<Element> &elements, int nRow, int 
     }
     ofs << "max" << "\t" << *max_element(sendCost.begin(), sendCost.end()) << endl;
     ofs << "min" << "\t" << *min_element(sendCost.begin(), sendCost.end()) << endl;
-    ofs << "ave" << "\t" << accumulate(sendCost.begin(), sendCost.end(), 0) / static_cast<double>(nPart) << endl;
+    ofs << "ave" << "\t" << accumulate(sendCost.begin(), sendCost.end(), 0) / nPart << endl;
 
     ofs << "#RecvCost" << endl;
     ofs << "max" << "\t" << *max_element(recvCost.begin(), recvCost.end()) << endl;
     ofs << "min" << "\t" << *min_element(recvCost.begin(), recvCost.end()) << endl;
-    ofs << "ave" << "\t" << accumulate(recvCost.begin(), recvCost.end(), 0) / static_cast<double>(nPart) << endl;
+    ofs << "ave" << "\t" << accumulate(recvCost.begin(), recvCost.end(), 0) / nPart << endl;
     ofs.close();
 }

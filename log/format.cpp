@@ -18,7 +18,7 @@ int main (int argc, char *argv[]) {
     map<string, string> data;
     while (getline(ifs, line)) {
         if (line == "----------------------------------------") {
-            cout << data["Matrix"] << " " << data["GFLOPS"] << " " << data["NumberOfRows"] << endl;
+            cout << data["Matrix"] << " " << data["GFLOPS"] << " " << data["NumberOfRows"] << " " << data["NumberOfNonzeros"] << endl;
             continue;
         }
         stringstream ss(line);

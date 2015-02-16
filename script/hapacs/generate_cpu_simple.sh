@@ -1,4 +1,3 @@
-
 #!/bin/bash
 if [ -z '$SPMV_DIR' ]; then
     echo 'Error: set \$SPMV_DIR'
@@ -9,35 +8,38 @@ DISTRIBUTE_METHOD=simple
 for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
 do
 
-    RUN_SCRIPT=$SPMV_DIR/script/coma/cpu-$DISTRIBUTE_METHOD/run_p${p}.sh
+    RUN_SCRIPT=$SPMV_DIR/script/hapacs/cpu-$DISTRIBUTE_METHOD/run_p${p}.sh
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
+    mpiprocs=`expr $p / $N`
+    ncpus=`expr $mpiprocs \* 4`
     echo "\
 #!/bin/bash
-#SBATCH -J \"SPMV-CS${p}\"
-#SBATCH -p mixed
-#SBATCH -N ${N}
-#SBATCH -n ${p}
-#SBATCH --ntasks-per-node=2
-#SBATCH --cpus-per-task=10
-#SBATCH -t 03:00:00
-#SBATCH -o slurm/%j.out
-#SBATCH -e slurm/%j.err
-#SBATCH -m block
+#PBS -S /bin/bash
+#PBS -N SPMV-CS${p}
+#PBS -A NUMLIB
+#PBS -q comq
+#PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs
+#PBS -l walltime=03:00:00
+#PBS -l place=scatter
+#PBS -o pbs/
+#PBS -e pbs/
+
+. /opt/Modules/default/init/bash
+module load intel/14.0.4 intelmpi/5.0.0 mkl/11.1.3
+
+cd $SPMV_DIR
+
 MATRIX_DIR=${SPMV_DIR}/matrix/
 PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
 SPMV=${SPMV_DIR}/bin/spmv.cpu
 LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
-cd $SPMV_DIR
-module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
-make spmv.cpu
-export OMP_NUM_THREADS=10
-export KMP_AFFINITY=compact
+make
 
 matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 for matrix in \${matrices}
 do
-    mpirun -np ${p} \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
+    mpirun -np ${p} -perhost ${p_per_host} \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}
