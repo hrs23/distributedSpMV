@@ -62,16 +62,15 @@ int main (int argc, char *argv[]) {
     PERR("Computing SpMV ... ");
     timingDetail[TIMING_TOTAL_SPMV] = "Total SpMV";
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
-        MPI_Barrier(MPI_COMM_WORLD); 
         double tmp = 0;
         double elapsedTime = GetSynchronizedTime();
         int nLoop = 0;
-        tmp -= MPI_Wtime();
+        tmp -= GetSynchronizedTime();
         while (GetSynchronizedTime() < elapsedTime + 1.0)  {
             SpMV(A, x, y);
             nLoop++;
         }
-        tmp += MPI_Wtime();
+        tmp += GetSynchronizedTime();
         if (!i || timing[TIMING_TOTAL_SPMV] > tmp / nLoop) {
             timing[TIMING_TOTAL_SPMV] = tmp / nLoop;
         }

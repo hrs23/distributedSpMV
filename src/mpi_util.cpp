@@ -280,6 +280,7 @@ void SelectDevice () {
 
 
 double GetSynchronizedTime () {
+    MPI_Barrier(MPI_COMM_WORLD);
     double t = MPI_Wtime();
     MPI_Bcast(&t, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     return t;

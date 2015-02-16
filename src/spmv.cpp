@@ -84,22 +84,21 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     double begin, elapsedTime;
     int nLoop;
     begin = GetSynchronizedTime();
-    elapsedTime = -MPI_Wtime();
+    elapsedTime = -GetSynchronizedTime();
     nLoop = 0;
     while (GetSynchronizedTime() - begin < 1.0) {
 #pragma omp parallel for
         for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
         nLoop++;
     }
-    elapsedTime += MPI_Wtime();
+    elapsedTime += GetSynchronizedTime();
     timingTemp[TIMING_PACKING] = elapsedTime / nLoop;
-    MPI_Barrier(MPI_COMM_WORLD);
     //==============================
     // Begin synchronouse communication
     //==============================
 
     begin = GetSynchronizedTime();
-    elapsedTime = -MPI_Wtime();
+    elapsedTime = -GetSynchronizedTime();
     nLoop = 0;
     while (GetSynchronizedTime() - begin < 1.0) {
         const int MPI_MY_TAG = 141421356 + nLoop;
@@ -139,33 +138,33 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
         delete [] sendStatuses;
         nLoop++;
     }
-    elapsedTime += MPI_Wtime();
+    elapsedTime += GetSynchronizedTime();
     timingTemp[TIMING_TOTAL_COMMUNICATION] = elapsedTime / nLoop;
 
     //==============================
     // Compute Internal
     //==============================
     begin = GetSynchronizedTime();
-    elapsedTime = -MPI_Wtime();
+    elapsedTime = -GetSynchronizedTime();
     nLoop = 0;
     while (GetSynchronizedTime() - begin < 1.0) {
         SpMVInternal(A, x, y);
         nLoop++;
     }
-    elapsedTime += MPI_Wtime();
+    elapsedTime += GetSynchronizedTime();
     timingTemp[TIMING_INTERNAL_COMPUTATION] = elapsedTime / nLoop;
     //==============================
     // Compute External
     //==============================
 
     begin = GetSynchronizedTime();
-    elapsedTime = -MPI_Wtime();
+    elapsedTime = -GetSynchronizedTime();
     nLoop = 0;
     while (GetSynchronizedTime() - begin < 1.0) {
         SpMVExternal(A, x, y);
         nLoop++;
     }
-    elapsedTime += MPI_Wtime();
+    elapsedTime += GetSynchronizedTime();
     timingTemp[TIMING_EXTERNAL_COMPUTATION] = elapsedTime / nLoop;
     return 0;
 
