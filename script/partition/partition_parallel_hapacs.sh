@@ -11,7 +11,6 @@
 module load intel/14.0.4 intelmpi/5.0.0 mkl/11.1.3
 SPMV_DIR=/work/NUMLIB/mhrs/distributedSpMV/
 MATRIX_DIR=$SPMV_DIR/matrix/
-PARTITION_METHOD=simple
 make bin/partition
 
 CORE=16
@@ -21,8 +20,8 @@ for matrix in $matrices
 do
     for ((npart=1; npart <= 64; npart *= 2))
     do
-        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix simple $npart $SPMV_DIR/partition/$PARTITION_METHOD/\n"
-        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix hypergraph $npart $SPMV_DIR/partition/$PARTITION_METHOD/\n"
+        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix simple $npart $SPMV_DIR/partition/simple/\n"
+        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix hypergraph $npart $SPMV_DIR/partition/hypergraph/\n"
     done
 done
 echo -e $tasks | xargs -P $CORE -I@ -t sh -c "eval @"

@@ -24,8 +24,8 @@ for matrix in $matrices
 do
     for ((npart=1; npart <= 64; npart *= 2))
     do
-        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix simple $npart $SPMV_DIR/partition/$PARTITION_METHOD/\n"
-        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix hypergraph $npart $SPMV_DIR/partition/$PARTITION_METHOD/\n"
+        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix simple $npart $SPMV_DIR/partition/simple/\n"
+        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix hypergraph $npart $SPMV_DIR/partition/hypergraph/\n"
     done
 done
 echo -e $tasks | xargs -P $CORE -I@ -t sh -c "eval @"
