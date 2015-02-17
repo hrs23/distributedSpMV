@@ -7,5 +7,11 @@ using namespace std;
 #define TIMING_PACKING              3
 #define TIMING_INTERNAL_COMPUTATION 4
 #define TIMING_EXTERNAL_COMPUTATION 5
-#define NUMBER_OF_TIMING        10
+#define TIMING_REAL_PACKING         6
+#define TIMING_REAL_BEGIN_COMMUNICATION     7
+#define TIMING_REAL_INTERNAL_COMPUTATION    8
+#define TIMING_REAL_EXTERNAL_COMPUTATION    9
+#define TIMING_REAL_WAIT_COMMUNICATION      10
+
+#define NUMBER_OF_TIMING        20
 extern vector<double> timingTemp;
