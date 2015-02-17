@@ -29,7 +29,7 @@ LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
-make spmv.cpu
+make bin/spmv.cpu
 export OMP_NUM_THREADS=10
 export KMP_AFFINITY=compact
 

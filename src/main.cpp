@@ -60,7 +60,7 @@ int main (int argc, char *argv[]) {
     // SpMV (Asynchronous)
     //------------------------------
     PERR("Computing SpMV ... ");
-    timingDetail[TIMING_TOTAL_SPMV] = "Total SpMV";
+    timingDetail[TIMING_TOTAL_SPMV] = "TotalSpMV";
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
         double tmp = 0;
         double elapsedTime = GetSynchronizedTime();
@@ -94,10 +94,10 @@ int main (int argc, char *argv[]) {
     //------------------------------
 
     PERR("Computing SpMV_measurement_once ... ");
-    timingDetail[TIMING_TOTAL_COMMUNICATION] = "Total Communication";
-    timingDetail[TIMING_TOTAL_COMPUTATION]  = "Total Computation";
-    timingDetail[TIMING_INTERNAL_COMPUTATION]  = "Internal Computation";
-    timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "External Computation";
+    timingDetail[TIMING_TOTAL_COMMUNICATION] = "TotalCommunication";
+    timingDetail[TIMING_TOTAL_COMPUTATION]  = "TotalComputation";
+    timingDetail[TIMING_INTERNAL_COMPUTATION]  = "InternalComputation";
+    timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "ExternalComputation";
     timingDetail[TIMING_PACKING] = "Packing";
     // TODO:
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
