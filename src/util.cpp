@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <string>
 #include "util.h"
 using namespace std;
 string GetBasename (const string &path) {
@@ -8,7 +9,7 @@ string GetBasename (const string &path) {
 
 
 vector<Element> GetElementsFromFile (const string &mtxFile, int &nRow, int &nCol, int &nNnz) {
-    ifstream ifs(mtxFile);
+    ifstream ifs(mtxFile.c_str());
     if (ifs.fail()) {
         cerr << "File not Found" << endl;
         exit(1);
