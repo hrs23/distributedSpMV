@@ -43,14 +43,14 @@ int main (int argc, char *argv[]) {
     if (rank == 0) fprintf(stderr, "Begin %s\n", mtxName.c_str());
     string partFile = string(argv[1]) + "-" + to_string(static_cast<long long>(size)) + "-" + to_string(static_cast<long long>(rank)) + ".part"; 
     PERR("Loading sparse matrix and vector ... ");
+#ifdef GPU
+    SelectDevice();
+#endif
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     SparseMatrix A;
     Vector x, y;
     LoadInput(partFile, A, x);
     CreateZeroVector(y, A.localNumberOfRows);
-#ifdef GPU
-    SelectDevice();
-#endif
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     PERR("done\n");
 

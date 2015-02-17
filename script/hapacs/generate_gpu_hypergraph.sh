@@ -5,12 +5,19 @@ if [ -z '$SPMV_DIR' ]; then
 fi
 MAX_NPROC=64
 DISTRIBUTE_METHOD=hypergraph
+function max () {
+    if [ $1 -lt $2 ]; then
+        echo $1
+    else 
+        echo $2
+    fi
+}
 for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
 do
 
     RUN_SCRIPT=$SPMV_DIR/script/hapacs/gpu-$DISTRIBUTE_METHOD/run_p${p}.sh
-    N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
-    mpiprocs=`expr $p / $N`
+    N=`echo ${p} | awk '{printf("%d",$1/4 + 0.9999999999)}'`
+    mpiprocs=`max $p 4`
     ncpus=`expr $mpiprocs \* 4`
     echo "\
 #!/bin/bash
@@ -18,7 +25,7 @@ do
 #PBS -N SPMV-GH${p}
 #PBS -A NUMLIB
 #PBS -q comq
-#PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs
+#PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs:ompthreads=4
 #PBS -l walltime=03:00:00
 #PBS -l place=scatter
 #PBS -o pbs/

@@ -31,11 +31,11 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     mkl_dcsrmv(&transa, &nRow, &nRow, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
 #endif
 #ifdef GPU
-    int * cuda_ptr = A.cuda_internalPtr;
-    int * cuda_idx = A.cuda_internalIdx;
-    double * cuda_val = A.cuda_internalVal;
-    double * cuda_x = A.cuda_x_values;
-    double * cuda_y = A.cuda_y_values;
+    int *cuda_ptr = A.cuda_internalPtr;
+    int *cuda_idx = A.cuda_internalIdx;
+    double *cuda_val = A.cuda_internalVal;
+    double *cuda_x = A.cuda_x_values;
+    double *cuda_y = A.cuda_y_values;
 
     checkCudaErrors(cudaMemcpy((void *)cuda_x, xv, A.localNumberOfRows * sizeof(double), cudaMemcpyHostToDevice));
     
