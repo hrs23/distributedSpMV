@@ -1,2 +1,2 @@
 all: format.cpp
-	g++ format.cpp -o format
+	icpc -std=c++11 format.cpp -o format
