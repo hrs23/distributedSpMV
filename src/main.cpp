@@ -11,8 +11,6 @@
 #include "util.h"
 #include "mpi_util.h"
 #include "timing.h"
-#define PRINT_HOSTNAME
-#define PRINT_PERFORMANCE
 using namespace std;
 
 vector<char*>   timingDetail(NUMBER_OF_TIMING, NULL);
@@ -67,21 +65,26 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_REAL_EXTERNAL_COMPUTATION] = "RealExternalComputation";
     timingDetail[TIMING_REAL_WAIT_COMMUNICATION] = "RealWaitCommunication";
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
+        fill(timingTemp.begin(), timingTemp.end(), 0);
         double begin = GetSynchronizedTime();
         double elapsedTime = -GetSynchronizedTime();
         int nLoop = 0;
+#ifdef MIC
         while (GetSynchronizedTime() - begin < 1.0)  {
+#endif
             SpMV(A, x, y);
             nLoop++;
+#ifdef MIC
         }
+#endif
         elapsedTime += GetSynchronizedTime();
         if (!i || timing[TIMING_TOTAL_SPMV] > elapsedTime / nLoop) {
             timing[TIMING_TOTAL_SPMV] = elapsedTime / nLoop;
-            timing[TIMING_REAL_PACKING] = timingTemp[TIMING_REAL_PACKING];
-            timing[TIMING_REAL_BEGIN_COMMUNICATION] = timingTemp[TIMING_REAL_BEGIN_COMMUNICATION];
-            timing[TIMING_REAL_INTERNAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION];
-            timing[TIMING_REAL_EXTERNAL_COMPUTATION] = timingTemp[TIMING_REAL_EXTERNAL_COMPUTATION];
-            timing[TIMING_REAL_WAIT_COMMUNICATION] = timingTemp[TIMING_REAL_WAIT_COMMUNICATION];
+            timing[TIMING_REAL_PACKING] = timingTemp[TIMING_REAL_PACKING] / nLoop;
+            timing[TIMING_REAL_BEGIN_COMMUNICATION] = timingTemp[TIMING_REAL_BEGIN_COMMUNICATION] / nLoop;
+            timing[TIMING_REAL_INTERNAL_COMPUTATION] = timingTemp[TIMING_REAL_INTERNAL_COMPUTATION] / nLoop;
+            timing[TIMING_REAL_EXTERNAL_COMPUTATION] = timingTemp[TIMING_REAL_EXTERNAL_COMPUTATION] / nLoop;
+            timing[TIMING_REAL_WAIT_COMMUNICATION] = timingTemp[TIMING_REAL_WAIT_COMMUNICATION] / nLoop;
         }
     }
     PERR("done\n");
@@ -168,16 +171,16 @@ int main (int argc, char *argv[]) {
 #endif
 
     if (rank == 0) {
-        printf("%20s\t%s\n", "Matrix", mtxName.c_str());
-        printf("%20s\t%d\n", "NumberOfProcesses", size);
-        printf("%20s\t%d\n", "NumberOfThreads",  omp_get_max_threads());
-        printf("%20s\t%d\n", "NumberOfRows", A.globalNumberOfRows);
-        printf("%20s\t%d\n", "NumberOfNonzeros", A.globalNumberOfNonzeros);
+        printf("%25s\t%s\n", "Matrix", mtxName.c_str());
+        printf("%25s\t%d\n", "NumberOfProcesses", size);
+        printf("%25s\t%d\n", "NumberOfThreads",  omp_get_max_threads());
+        printf("%25s\t%d\n", "NumberOfRows", A.globalNumberOfRows);
+        printf("%25s\t%d\n", "NumberOfNonzeros", A.globalNumberOfNonzeros);
 #ifdef PRINT_PERFORMANCE
-        printf("%20s\t%.10lf\n", "GFLOPS", A.globalNumberOfNonzeros * 2 / timing[TIMING_TOTAL_SPMV] / 1e9);
+        printf("%25s\t%.10lf\n", "GFLOPS", A.globalNumberOfNonzeros * 2 / timing[TIMING_TOTAL_SPMV] / 1e9);
         for (int i = 0; i < NUMBER_OF_TIMING; i++) {
             if (timingDetail[i] != NULL) {
-                printf("%20s\t%.10lf\n", timingDetail[i], timing[i]);
+                printf("%25s\t%.10lf\n", timingDetail[i], timing[i]);
             }
         }
 #endif
