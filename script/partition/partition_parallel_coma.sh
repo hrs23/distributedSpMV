@@ -10,33 +10,22 @@
 #SBATCH -e stderr
 #SBATCH -m block
 
-CORE=20
 if [ -z "$SPMV_DIR" ]; then
     echo "Error: set \$SPMV_DIR"
     exit 
 fi
 
-
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
 
-#if [ $# -ne 1 ]; then
-    #echo "Usage: $0 <Partition method ('hypergraph' or 'simple')>"
-    #exit
-#fi
-PARTITION_METHOD=simple
-for ((npart=1; npart <= 64; npart *= 2))
+CORE=20
+tasks=""
+matrices=`ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {}`
+for matrix in $matrices
 do
-    echo "Partitioning to $npart with $PARTITION_METHOD ..."
-    #ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ 
-    ls $SPMV_DIR/matrix/dense*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ \
-    $SPMV_DIR/bin/partition $SPMV_DIR/matrix/@ $PARTITION_METHOD $npart "$SPMV_DIR/partition/$PARTITION_METHOD/"
+    for ((npart=1; npart <= 64; npart *= 2))
+    do
+        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix simple $npart $SPMV_DIR/partition/$PARTITION_METHOD/\n"
+        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/$matrix hypergraph $npart $SPMV_DIR/partition/$PARTITION_METHOD/\n"
+    done
 done
-
-PARTITION_METHOD=hypergraph
-for ((npart=1; npart <= 64; npart *= 2))
-do
-    echo "Partitioning to $npart with $PARTITION_METHOD ..."
-    #ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ 
-    ls $SPMV_DIR/matrix/dense*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $CORE -I@ \
-        $SPMV_DIR/bin/partition $SPMV_DIR/matrix/@ $PARTITION_METHOD $npart "$SPMV_DIR/partition/$PARTITION_METHOD/"
-done
+echo -e $tasks | xargs -P $CORE -I@ -t sh -c "eval @"

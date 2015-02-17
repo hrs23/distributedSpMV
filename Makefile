@@ -49,7 +49,7 @@ $(SPMV_MIC) : $(spmv_objects_mic)
 ########################################
 # SPMV GPU 
 ########################################
-$(OBJECT_DIR)/%.o.gpu : CXXFLAGS += -xHOST -DGPU -DGPU_PER_NODE=1 -I/opt/CUDA/6.5.14/cudatoolkit/include -I/opt/CUDA/6.5.14/samples/common/inc
+$(OBJECT_DIR)/%.o.gpu : CXXFLAGS += -xHOST -DGPU -DGPU_PER_NODE=4 -I/opt/CUDA/6.5.14/cudatoolkit/include -I/opt/CUDA/6.5.14/samples/common/inc
 $(OBJECT_DIR)/%.o.gpu : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 

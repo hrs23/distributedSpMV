@@ -34,12 +34,12 @@ PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
 SPMV=${SPMV_DIR}/bin/spmv.gpu
 LOG=${SPMV_DIR}/log/gpu-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
-make
+make bin/spmv.gpu
 
 matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 for matrix in \${matrices}
 do
-    mpirun -np ${p} -perhost ${p_per_host} \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
+    mpirun -np ${p} -perhost ${mpiprocs} \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}
