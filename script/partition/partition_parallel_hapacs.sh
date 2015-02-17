@@ -11,6 +11,7 @@
 module load intel/14.0.4 intelmpi/5.0.0 mkl/11.1.3
 SPMV_DIR=/work/NUMLIB/mhrs/distributedSpMV/
 MATRIX_DIR=$SPMV_DIR/matrix/
+cd $SPMV_DIR
 make bin/partition
 
 CORE=16
