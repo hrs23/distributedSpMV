@@ -24,8 +24,8 @@ do
 #PBS -S /bin/bash
 #PBS -N SPMV-GS${p}
 #PBS -A NUMLIB
-#PBS -q comq
-#PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs:ompthreads=4
+#PBS -q tcag
+#PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs:ompthreads=5
 #PBS -l walltime=03:00:00
 #PBS -l place=scatter
 #PBS -o pbs/
@@ -35,11 +35,12 @@ do
 module load intelmpi/5.0.0 intel/14.0.4 cuda/6.5.14 cuda/samples_6.5.14 
 
 cd $SPMV_DIR
+export OMP_NUM_THREADS=5
 
 MATRIX_DIR=${SPMV_DIR}/matrix/
 PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
 SPMV=${SPMV_DIR}/bin/spmv.gpu
-LOG=${SPMV_DIR}/log/gpu-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
+LOG=${SPMV_DIR}/log/gpu-$DISTRIBUTE_METHOD-tcag-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 make bin/spmv.gpu
 
