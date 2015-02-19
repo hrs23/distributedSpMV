@@ -1,18 +1,19 @@
 #/bin/bash -x
-if [ -z "$SPMV_DIR" ]; then
-    echo "Error: set \$SPMV_DIR"
+set -u
+if [ "${SPMV_DIR-undefined}" = "undefined" ]; then
+    echo 'Error: set \$SPMV_DIR'
     exit 
 fi
-#if [ $# -ne 1 ]; then
-    #echo "Usage: $0 <npart>"
-    #exit
-#fi
-ncore=4
 
-matrices=`ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {} | tr ' ' '\n'`
-for ((npart=1; npart <= 64; npart *= 2))
+CORE=10
+tasks=""
+matrices=`ls $SPMV_DIR/matrix/tmp/*.mtx | xargs -i basename {}`
+for matrix in $matrices
 do
-    echo "npart = $npart"
-    ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {} | tr ' ' '\n' | xargs -P $ncore -I@ \
-        $SPMV_DIR/bin/partition $SPMV_DIR/matrix/@ $npart $SPMV_DIR/partition/
+    for ((npart=1; npart <= 64; npart *= 2))
+    do
+        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/tmp/$matrix simple $npart $SPMV_DIR/partition/simple/\n"
+        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/tmp/$matrix hypergraph $npart $SPMV_DIR/partition/hypergraph/\n"
+    done
 done
+echo -e $tasks | xargs -P $CORE -I@ -t sh -c "eval @"
