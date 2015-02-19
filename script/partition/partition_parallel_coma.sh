@@ -6,8 +6,8 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=10
 #SBATCH -t 20:00:00
-#SBATCH -o stdout
-#SBATCH -e stderr
+#SBATCH -o slurm/%j.out
+#SBATCH -e slurm/%j.err
 #SBATCH -m block
 
 set -u
