@@ -1,14 +1,12 @@
 *.out
 CMakeCache.txt
 CMakeFiles
-test
 cmake_install.cmake
 hypergraph/*.u
-matrix/*.mtx
+*.mtx
 matrix/*.tar.gz
 bin/*
 partition/*.part
-test/
 stdout
 stderr
 log/*
