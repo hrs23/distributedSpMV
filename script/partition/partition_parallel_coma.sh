@@ -10,11 +10,11 @@
 #SBATCH -e stderr
 #SBATCH -m block
 
-if [ -z "$SPMV_DIR" ]; then
-    echo "Error: set \$SPMV_DIR"
+set -u
+if [ "${SPMV_DIR-undefined}" = "undefined" ]; then
+    echo 'Error: set \$SPMV_DIR'
     exit 
 fi
-
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
 
 CORE=20

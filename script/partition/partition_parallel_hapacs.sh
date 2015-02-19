@@ -8,6 +8,11 @@
 #PBS -o pbs/
 #PBS -e pbs/
 
+set -u
+if [ "${SPMV_DIR-undefined}" = "undefined" ]; then
+    echo 'Error: set \$SPMV_DIR'
+    exit 
+fi
 module load intel/14.0.4 intelmpi/5.0.0 mkl/11.1.3
 SPMV_DIR=/work/NUMLIB/mhrs/distributedSpMV/
 MATRIX_DIR=$SPMV_DIR/matrix/
