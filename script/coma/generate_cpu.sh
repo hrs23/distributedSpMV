@@ -1,19 +1,27 @@
-
 #!/bin/bash
-if [ -z '$SPMV_DIR' ]; then
+set -u
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <partition method>"
+    exit 
+fi
+if [ "${SPMV_DIR-undefined}" = "undefined" ]; then
     echo 'Error: set \$SPMV_DIR'
     exit 
 fi
-MAX_NPROC=64
-DISTRIBUTE_METHOD=simple
-for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
+if [ $1 != "hypergraph" -a $1 != "simple" ]; then
+    echo "Error: partition method must be hypergraph or simple"
+    exit
+fi
+DISTRIBUTE_METHOD=$1
+for (( p=1; p <= 64; p*=2 ))
 do
 
     RUN_SCRIPT=$SPMV_DIR/script/coma/cpu-$DISTRIBUTE_METHOD/run_p${p}.sh
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
     echo "\
 #!/bin/bash
-#SBATCH -J \"SPMV-CS${p}\"
+#SBATCH -J \"SPMV-CH${p}\"
 #SBATCH -p mixed
 #SBATCH -N ${N}
 #SBATCH -n ${p}

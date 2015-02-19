@@ -1,12 +1,22 @@
 #!/bin/bash
-if [ -z '$SPMV_DIR' ]; then
+
+set -u
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <partition method>"
+    exit 
+fi
+if [ "${SPMV_DIR-undefined}" = "undefined" ]; then
     echo 'Error: set \$SPMV_DIR'
     exit 
 fi
-MAX_NPROC=64
-DISTRIBUTE_METHOD=hypergraph
+if [ $1 != "hypergraph" -a $1 != "simple" ]; then
+    echo "Error: partition method must be hypergraph or simple"
+    exit
+fi
+
+DISTRIBUTE_METHOD=$1
 MPIRUN_MIC=mpirun-mic
-for (( p=1; p <= ${MAX_NPROC}; p*=2 ))
+for (( p=1; p <= 64; p*=2 ))
 do
 
     if [ $p -gt 1 ]; then
