@@ -20,7 +20,6 @@ MATRIX_DIR=$SPMV_DIR/matrix/
 cd $SPMV_DIR
 make bin/partition
 
-CORE=16
 tasks=""
 matrices=`ls $MATRIX_DIR/*.mtx | xargs -i basename {}`
 for matrix in $matrices
@@ -31,4 +30,4 @@ do
         tasks+="$SPMV_DIR/bin/partition $MATRIX_DIR/$matrix hypergraph $npart $SPMV_DIR/partition/hypergraph/\n"
     done
 done
-echo -e $tasks | xargs -P $CORE -I@ -t sh -c "eval @"
+echo -e $tasks | xargs -P 0 -I@ -t sh -c "eval @"
