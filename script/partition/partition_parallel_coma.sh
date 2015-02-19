@@ -5,7 +5,7 @@
 #SBATCH -n 1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=10
-#SBATCH -t 30:00:00
+#SBATCH -t 20:00:00
 #SBATCH -o stdout
 #SBATCH -e stderr
 #SBATCH -m block
@@ -19,7 +19,7 @@ module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
 
 CORE=20
 tasks=""
-matrices=`ls $SPMV_DIR/matrix/*.mtx | xargs -i basename {}`
+matrices=`ls $SPMV_DIR/matrix/tmp/*.mtx | xargs -i basename {}`
 for matrix in $matrices
 do
     for ((npart=1; npart <= 64; npart *= 2))
