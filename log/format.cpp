@@ -12,6 +12,7 @@ void PrintData (map<string, string> &data) {
         << "\t" << data["GFLOPS"]
         << "\t" << data["NumberOfRows"]
         << "\t" << data["NumberOfNonzeros"]
+        << "\t" << data["TotalSpMV"]
         << "\t" << data["TotalCommunication"]
         << "\t" << data["TotalComputation"]
         << "\t" << data["Packing"]

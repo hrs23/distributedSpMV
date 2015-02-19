@@ -17,15 +17,20 @@ if [ "${SPMV_DIR-undefined}" = "undefined" ]; then
 fi
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
 
+#MATRIX_DIR=$SPMV_DIR/matrix/tmp/
+MATRIX_DIR=$SPMV_DIR/matrix/
+cd $SPMV_DIR
+make bin/partition
+
 CORE=20
 tasks=""
-matrices=`ls $SPMV_DIR/matrix/tmp/*.mtx | xargs -i basename {}`
+matrices=`ls $MATRIX_DIR/*.mtx | xargs -i basename {}`
 for matrix in $matrices
 do
     for ((npart=1; npart <= 64; npart *= 2))
     do
-        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/tmp/$matrix simple $npart $SPMV_DIR/partition/simple/\n"
-        tasks+="$SPMV_DIR/bin/partition $SPMV_DIR/matrix/tmp/$matrix hypergraph $npart $SPMV_DIR/partition/hypergraph/\n"
+        tasks+="$SPMV_DIR/bin/partition $MATRIX_DIR/$matrix simple $npart $SPMV_DIR/partition/simple/\n"
+        tasks+="$SPMV_DIR/bin/partition $MATRIX_DIR/$matrix hypergraph $npart $SPMV_DIR/partition/hypergraph/\n"
     done
 done
 echo -e $tasks | xargs -P $CORE -I@ -t sh -c "eval @"
