@@ -55,7 +55,7 @@ make bin/spmv.cpu
 matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 for matrix in \${matrices}
 do
-    mpirun -np ${p} -perhost ${mpiprocs} \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
+    mpirun -np ${p} -perhost ${mpiprocs} $SPMV_DIR/hapacs/numarun.sh \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}
