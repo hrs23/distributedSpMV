@@ -4,7 +4,7 @@ OBJECT_DIR = obj
 LIBRARY_DIR = lib
 INCLUDE_DIR = include
 
-OPTION = -DPRINT_HOSTNAME -DPRINT_PERFORMANCE
+OPTION = -DPRINT_HOSTNAME -DPRINT_PERFORMANCE -DPRINT_NUMABIND
 #OPTION = -DPRINT_PERFORMANCE
 
 CXX = mpiicpc
@@ -31,11 +31,12 @@ all: $(TARGETS)
 ########################################
 # SPMV CPU 
 ########################################
-$(OBJECT_DIR)/%.o.cpu : CXXFLAGS += -xHOST -DCPU 
+$(OBJECT_DIR)/%.o.cpu : CXXFLAGS += -xHOST -DCPU  
 $(OBJECT_DIR)/%.o.cpu : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(SPMV_CPU) : CXXFLAGS += -mkl
+$(SPMV_CPU) : LDFLAGS += -lnuma
 $(SPMV_CPU) : $(spmv_objects_cpu)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 

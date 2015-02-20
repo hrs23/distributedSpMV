@@ -11,6 +11,9 @@
 #include "util.h"
 #include "mpi_util.h"
 #include "timing.h"
+#ifdef NUMA_BIND
+#include "numa.h"
+#endif
 using namespace std;
 
 vector<char*>   timingDetail(NUMBER_OF_TIMING, NULL);
@@ -174,6 +177,12 @@ int main (int argc, char *argv[]) {
         printf("%25s\t%s\n", "Matrix", mtxName.c_str());
         printf("%25s\t%d\n", "NumberOfProcesses", size);
         printf("%25s\t%d\n", "NumberOfThreads",  omp_get_max_threads());
+#ifdef NUMA_BIND
+        if (numa_available() != -1) {
+            printf("%25s\t%d\n", "RunNodeBindMask", (int)*numa_get_run_node_mask()->maskp);
+            printf("%25s\t%d\n", "MemBindMask", (int)*numa_get_membind()->maskp);
+        }
+#endif
         printf("%25s\t%d\n", "NumberOfRows", A.globalNumberOfRows);
         printf("%25s\t%d\n", "NumberOfNonzeros", A.globalNumberOfNonzeros);
 #ifdef PRINT_PERFORMANCE

@@ -31,7 +31,7 @@ do
 #SBATCH -t 03:00:00
 #SBATCH -o slurm/%j.out
 #SBATCH -e slurm/%j.err
-#SBATCH -m block
+#SBATCH -m block:block
 MATRIX_DIR=${SPMV_DIR}/matrix/
 PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
 SPMV=${SPMV_DIR}/bin/spmv.cpu
@@ -46,7 +46,8 @@ export KMP_AFFINITY=compact
 matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 for matrix in \${matrices}
 do
-    mpirun -np ${p} \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
+    #mpirun -np ${p} numactl --localalloc \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
+    mpirun -np ${p} ${SPMV_DIR}/script/coma/numarun.sh \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}

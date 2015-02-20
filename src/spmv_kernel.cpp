@@ -20,6 +20,7 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     double BETA = 0;
     int nRow = A.localNumberOfRows;
     int nNnz = A.internalPtr[nRow];
+    if (nNnz == 0) return 0;
 #if defined(MIC) || defined(CPU)
     int *ptr = A.internalPtr;
     int *idx = A.internalIdx;
@@ -57,6 +58,7 @@ int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
     int nRow = A.localNumberOfRows;
     int nCol = A.localNumberOfRows + A.totalNumberOfRecv;
     int nNnz = A.externalPtr[nRow];
+    if (nNnz == 0) return 0;
 #if defined(MIC) || defined(CPU)
     int *ptr = A.externalPtr;
     int *idx = A.externalIdx;
