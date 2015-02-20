@@ -4,13 +4,13 @@ if [ "${SPMV_DIR-undefined}" = "undefined" ]; then
 fi
 
 tasks=""
-for p in `ls $SPMV_DIR/partition/simple/`
+for f in `ls $SPMV_DIR/partition/simple/ | xargs -i basename {}`
 do
-    tasks+="scp $PARTITION_DIR/partition/hypergraph/* mhrs@coma:/work/NUMLIB2/mhrs/distributedSpMV/partition-tmp/hypergraph/"
-    tasks+="scp $PARTITION_DIR/partition/simple/* mhrs@coma:/work/NUMLIB2/mhrs/distributedSpMV/partition-tmp/simple/"
-    tasks+="scp $PARTITION_DIR/partition/hypergraph/* mhrs@hapacs:/work/NUMLIB/mhrs/distributedSpMV/partition-tmp/hypergraph/"
-    tasks+="scp $PARTITION_DIR/partition/simple/* mhrs@hapacs:/work/NUMLIB/mhrs/distributedSpMV/partition-tmp/simple/"
+    PARTITION_DIR=$SPMV_DIR/partition/
+    tasks+="scp $PARTITION_DIR/hypergraph/$f mhrs@coma:/work/NUMLIB2/mhrs/distributedSpMV/partition-tmp/hypergraph/\n"
+    tasks+="scp $PARTITION_DIR/simple/$f mhrs@coma:/work/NUMLIB2/mhrs/distributedSpMV/partition-tmp/simple/\n"
+    tasks+="scp $PARTITION_DIR/hypergraph/$f mhrs@hapacs:/work/NUMLIB/mhrs/distributedSpMV/partition-tmp/hypergraph/\n"
+    tasks+="scp $PARTITION_DIR/simple/$f mhrs@hapacs:/work/NUMLIB/mhrs/distributedSpMV/partition-tmp/simple/\n"
 done
 
-echo $tasks
-#echo -e $tasks | xargs -P 4 -I@ -t sh -c "eval @"
+echo -e $tasks | xargs -P 4 -I@ -t sh -c "eval @"
