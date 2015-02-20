@@ -14,6 +14,7 @@ if [ $1 != "hypergraph" -a $1 != "simple" ]; then
     exit
 fi
 DISTRIBUTE_METHOD=$1
+D=`echo $1 | cut -b 1`
 for (( p=1; p <= 64; p*=2 ))
 do
 
@@ -21,7 +22,7 @@ do
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
     echo "\
 #!/bin/bash
-#SBATCH -J \"SPMV-CH${p}\"
+#SBATCH -J \"SPMV-C$D$p\"
 #SBATCH -p mixed
 #SBATCH -N ${N}
 #SBATCH -n ${p}
@@ -38,7 +39,7 @@ LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
-make bin/spmv.cpu
+#make bin/spmv.cpu
 export OMP_NUM_THREADS=10
 export KMP_AFFINITY=compact
 

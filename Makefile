@@ -9,7 +9,7 @@ OPTION = -DPRINT_HOSTNAME -DPRINT_PERFORMANCE
 
 CXX = mpiicpc
 LDFLAGS = -L$(LIBRARY_DIR) -L$(OBJECT_DIR)
-CXXFLAGS = -std=c++11 -ipo -Wall -O3 -fopenmp -I$(INCLUDE_DIR) $(OPTION)
+CXXFLAGS = -std=c++11 -ipo -Wall -O2 -fopenmp -I$(INCLUDE_DIR) $(OPTION)
 
 vpath %.cpp $(SOURCE_DIR)
 partition_sources = partition.cpp util.cpp

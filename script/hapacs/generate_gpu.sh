@@ -14,6 +14,7 @@ if [ $1 != "hypergraph" -a $1 != "simple" ]; then
     exit
 fi
 DISTRIBUTE_METHOD=$1
+D=`echo $1 | cut -b 1`
 
 function max () {
     if [ $1 -lt $2 ]; then
@@ -32,7 +33,7 @@ do
     echo "\
 #!/bin/bash
 #PBS -S /bin/bash
-#PBS -N SPMV-GH${p}
+#PBS -N SPMV-G$D$p
 #PBS -A NUMLIB
 #PBS -q tcag
 #PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs:ompthreads=5

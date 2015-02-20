@@ -15,6 +15,7 @@ if [ $1 != "hypergraph" -a $1 != "simple" ]; then
 fi
 
 DISTRIBUTE_METHOD=$1
+D=`echo $1 | cut -b 1`
 MPIRUN_MIC=mpirun-mic
 for (( p=1; p <= 64; p*=2 ))
 do
@@ -26,7 +27,7 @@ do
     N=`echo ${p} | awk '{printf("%d",$1/2 + 0.5)}'`
     echo "\
 #!/bin/bash
-#SBATCH -J \"SPMV-MH${p}\"
+#SBATCH -J \"SPMV-M$D$p\"
 #SBATCH -p mic
 #SBATCH -N ${N}
 #SBATCH -n ${p}
