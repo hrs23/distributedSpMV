@@ -33,7 +33,7 @@ do
 #SBATCH -n ${p}
 #SBATCH --ntasks-per-node=2
 #SBATCH --cpus-per-task=10
-#SBATCH -t 03:00:00
+#SBATCH -t 05:00:00
 #SBATCH -o slurm/%j.out
 #SBATCH -e slurm/%j.err
 #SBATCH -m block:block
@@ -54,7 +54,7 @@ matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 pdcp -w \$SLURM_JOB_NODELIST -R ssh $SPMV_DIR/bin/spmv.mic /mic-work/\$USER
 for matrix in \${matrices}
 do
-    mpirun $SPMV_DIR/script/coma/copy-part.sh \$matrix hypergraph
+    mpirun $SPMV_DIR/script/coma/copy-part.sh \$matrix $DISTRIBUTE_METHOD
     /opt/slurm/default/local/bin/$MPIRUN_MIC -m \"/mic-work/\$USER/spmv.mic /mic-work/\$USER/\$matrix\" >> \$LOG
 done
     " > ${RUN_SCRIPT}

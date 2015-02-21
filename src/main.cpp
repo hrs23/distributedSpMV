@@ -73,7 +73,7 @@ int main (int argc, char *argv[]) {
         double elapsedTime = -GetSynchronizedTime();
         int nLoop = 0;
 #ifdef MIC
-        while (GetSynchronizedTime() - begin < 10.0)  {
+        while (GetSynchronizedTime() - begin < 1.0)  {
 #endif
             SpMV(A, x, y);
             nLoop++;
@@ -114,7 +114,7 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_INTERNAL_COMPUTATION]  = "InternalComputation";
     timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "ExternalComputation";
     timingDetail[TIMING_PACKING] = "Packing";
-    for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
+    for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV/2; i++) {
         SpMV_measurement_once(A, x, y);
         if (!i) {
             timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION];
