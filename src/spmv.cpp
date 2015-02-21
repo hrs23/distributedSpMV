@@ -9,45 +9,45 @@
 #include "timing.h"
 using namespace std;
 int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
-	//==============================
-	// Packing
-	//==============================
+    //==============================
+    // Packing
+    //==============================
     timingTemp[TIMING_REAL_PACKING] -= GetSynchronizedTime();
-	double *xv = x.values;
+    double *xv = x.values;
     double *sendBuffer = A.sendBuffer;
 #pragma omp parallel for
-	for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
+    for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
     timingTemp[TIMING_REAL_PACKING] += GetSynchronizedTime();
-	//==============================
-	// Begin Asynchronouse Communication
-	//==============================
+    //==============================
+    // Begin Asynchronouse Communication
+    //==============================
     timingTemp[TIMING_REAL_BEGIN_COMMUNICATION] -= GetSynchronizedTime();
-	const int MPI_MY_TAG = 141421356;
-	MPI_Request *recvRequests = new MPI_Request[A.numberOfRecvNeighbors];
-	MPI_Request *sendRequests = new MPI_Request[A.numberOfSendNeighbors];
-	double *x_external = (double *) xv + A.localNumberOfRows;
-	for (int i = 0; i < A.numberOfRecvNeighbors; i++) {
-		int nRecv = A.recvLength[i];
+    const int MPI_MY_TAG = 141421356;
+    MPI_Request *recvRequests = new MPI_Request[A.numberOfRecvNeighbors];
+    MPI_Request *sendRequests = new MPI_Request[A.numberOfSendNeighbors];
+    double *x_external = (double *) xv + A.localNumberOfRows;
+    for (int i = 0; i < A.numberOfRecvNeighbors; i++) {
+        int nRecv = A.recvLength[i];
         int src = A.recvNeighbors[i];
-		MPI_Irecv(x_external, nRecv, MPI_DOUBLE, src, MPI_MY_TAG, MPI_COMM_WORLD, &recvRequests[i]);
-		x_external += nRecv;
-	}
-	for (int i = 0; i < A.numberOfSendNeighbors; i++) {
-		int nSend = A.sendLength[i];
+        MPI_Irecv(x_external, nRecv, MPI_DOUBLE, src, MPI_MY_TAG, MPI_COMM_WORLD, &recvRequests[i]);
+        x_external += nRecv;
+    }
+    for (int i = 0; i < A.numberOfSendNeighbors; i++) {
+        int nSend = A.sendLength[i];
         int dst = A.sendNeighbors[i];
-		MPI_Isend(sendBuffer, nSend, MPI_DOUBLE, dst, MPI_MY_TAG, MPI_COMM_WORLD, &sendRequests[i]);
-		sendBuffer += nSend;
-	}
+        MPI_Isend(sendBuffer, nSend, MPI_DOUBLE, dst, MPI_MY_TAG, MPI_COMM_WORLD, &sendRequests[i]);
+        sendBuffer += nSend;
+    }
     timingTemp[TIMING_REAL_BEGIN_COMMUNICATION] += GetSynchronizedTime();
-	//==============================
-	// Compute Internal
-	//==============================
+    //==============================
+    // Compute Internal
+    //==============================
     timingTemp[TIMING_REAL_INTERNAL_COMPUTATION] -= GetSynchronizedTime();
-	{
-		SpMVInternal(A, x, y);
-	}
+    {
+        SpMVInternal(A, x, y);
+    }
     timingTemp[TIMING_REAL_INTERNAL_COMPUTATION] += GetSynchronizedTime();
-	//==============================
+    //==============================
     // Wait Asynchronous Communication
     //==============================
     timingTemp[TIMING_REAL_WAIT_COMMUNICATION] -= GetSynchronizedTime();
@@ -68,7 +68,7 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
     }
     timingTemp[TIMING_REAL_EXTERNAL_COMPUTATION] += GetSynchronizedTime();
 
-	//==============================
+    //==============================
     // Wait Asynchronous Communication
     //==============================
     timingTemp[TIMING_REAL_WAIT_COMMUNICATION] -= GetSynchronizedTime();
