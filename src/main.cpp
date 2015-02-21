@@ -67,6 +67,7 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_REAL_INTERNAL_COMPUTATION] = "RealInternalComputation";
     timingDetail[TIMING_REAL_EXTERNAL_COMPUTATION] = "RealExternalComputation";
     timingDetail[TIMING_REAL_WAIT_COMMUNICATION] = "RealWaitCommunication";
+    timingDetail[TIMING_REAL_DELETE] = "RealDelete";
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
         fill(timingTemp.begin(), timingTemp.end(), 0);
         double begin = GetSynchronizedTime();
@@ -88,6 +89,7 @@ int main (int argc, char *argv[]) {
             timing[TIMING_REAL_INTERNAL_COMPUTATION] = timingTemp[TIMING_REAL_INTERNAL_COMPUTATION] / nLoop;
             timing[TIMING_REAL_EXTERNAL_COMPUTATION] = timingTemp[TIMING_REAL_EXTERNAL_COMPUTATION] / nLoop;
             timing[TIMING_REAL_WAIT_COMMUNICATION] = timingTemp[TIMING_REAL_WAIT_COMMUNICATION] / nLoop;
+            timing[TIMING_REAL_DELETE] = timingTemp[TIMING_REAL_DELETE] / nLoop;
         }
     }
     PERR("done\n");

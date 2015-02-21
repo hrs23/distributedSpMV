@@ -80,10 +80,12 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
         }
     }
     timingTemp[TIMING_REAL_WAIT_COMMUNICATION] += GetSynchronizedTime();
+    timingTemp[TIMING_REAL_DELETE] -= GetSynchronizedTime();
     delete [] recvRequests;
     delete [] sendRequests;
     delete [] recvStatuses;
     delete [] sendStatuses;
+    timingTemp[TIMING_REAL_DELETE] += GetSynchronizedTime();
     return 0;
 
 }

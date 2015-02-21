@@ -9,10 +9,12 @@ using namespace std;
 #define TIMING_REAL_INTERNAL_COMPUTATION    3
 #define TIMING_REAL_EXTERNAL_COMPUTATION    4
 #define TIMING_REAL_WAIT_COMMUNICATION      5
-#define TIMING_TOTAL_COMMUNICATION          6
-#define TIMING_TOTAL_COMPUTATION            7
-#define TIMING_PACKING                      8
-#define TIMING_INTERNAL_COMPUTATION         9
-#define TIMING_EXTERNAL_COMPUTATION         10
+#define TIMING_REAL_DELETE                  6
+
+#define TIMING_TOTAL_COMMUNICATION          10
+#define TIMING_TOTAL_COMPUTATION            11
+#define TIMING_PACKING                      12
+#define TIMING_INTERNAL_COMPUTATION         13
+#define TIMING_EXTERNAL_COMPUTATION         14
 
 extern vector<double> timingTemp;
