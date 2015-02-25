@@ -39,7 +39,7 @@ LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
 module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
-#make bin/spmv.cpu
+make bin/spmv.cpu
 export OMP_NUM_THREADS=10
 export KMP_AFFINITY=compact
 
@@ -47,7 +47,7 @@ matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 for matrix in \${matrices}
 do
     #mpirun -np ${p} numactl --localalloc \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
-    mpirun -np ${p} ${SPMV_DIR}/script/coma/numarun.sh \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
+    mpirun -np ${p} ${SPMV_DIR}/script/coma/numarun.sh \$SPMV \$PARTITION_DIR/\$matrix \$MATRIX_DIR/\$matrix >> \$LOG
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}
