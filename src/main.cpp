@@ -58,6 +58,20 @@ int main (int argc, char *argv[]) {
     PERR("done\n");
 
     //------------------------------
+    // SpMV (Count loop number)
+    //------------------------------
+
+    int nLoop = 1;
+    {
+        double begin = GetSynchronizedTime();
+        while (GetSynchronizedTime() - begin < 1.0)  {
+            nLoop *= 2;
+            for (int l = 0; l < nLoop / 2; l++) SpMV(A, x, y);
+        }
+        nLoop /= 2;
+    }
+
+    //------------------------------
     // SpMV (Asynchronous)
     //------------------------------
     PERR("Computing SpMV ... ");
@@ -74,15 +88,9 @@ int main (int argc, char *argv[]) {
         fill(timingTemp.begin(), timingTemp.end(), 0);
         double begin = GetSynchronizedTime();
         double elapsedTime = -GetSynchronizedTime();
-        int nLoop = 0;
-#ifdef MIC
-        while (GetSynchronizedTime() - begin < 1.0)  {
-#endif
+        for (int l = 0; l < nLoop; l++) {
             SpMV(A, x, y);
-            nLoop++;
-#ifdef MIC
         }
-#endif
         elapsedTime += GetSynchronizedTime();
         if (!i || timing[TIMING_TOTAL_SPMV] > elapsedTime / nLoop) {
             timing[TIMING_TOTAL_SPMV] = elapsedTime / nLoop;
@@ -120,7 +128,7 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_INTERNAL_COMPUTATION]  = "InternalComputation";
     timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "ExternalComputation";
     timingDetail[TIMING_PACKING] = "Packing";
-    for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
+    for (int i = 0; i < NUMBER_OF_LOOP_OF_MEASURENT_SPMV; i++) {
         SpMV_measurement_once(A, x, y);
         if (!i) {
             timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION];
@@ -128,14 +136,14 @@ int main (int argc, char *argv[]) {
             timing[TIMING_EXTERNAL_COMPUTATION] = timingTemp[TIMING_EXTERNAL_COMPUTATION];
             timing[TIMING_PACKING] = timingTemp[TIMING_PACKING];
             timing[TIMING_TOTAL_COMPUTATION] = timingTemp[TIMING_INTERNAL_COMPUTATION] + 
-                                               timingTemp[TIMING_EXTERNAL_COMPUTATION];
+                timingTemp[TIMING_EXTERNAL_COMPUTATION];
         } else {
             amin(timing[TIMING_TOTAL_COMMUNICATION], timingTemp[TIMING_TOTAL_COMMUNICATION]);
             amin(timing[TIMING_INTERNAL_COMPUTATION], timingTemp[TIMING_INTERNAL_COMPUTATION]);
             amin(timing[TIMING_EXTERNAL_COMPUTATION], timingTemp[TIMING_EXTERNAL_COMPUTATION]);
             amin(timing[TIMING_PACKING], timingTemp[TIMING_PACKING]);
             amin(timing[TIMING_TOTAL_COMPUTATION], timingTemp[TIMING_INTERNAL_COMPUTATION] + 
-                                                   timingTemp[TIMING_EXTERNAL_COMPUTATION]);
+                    timingTemp[TIMING_EXTERNAL_COMPUTATION]);
         }
     }
     PERR("done\n");
@@ -179,7 +187,7 @@ int main (int argc, char *argv[]) {
     PrintHostName();
 #endif
 
-    if (rank == 63) {
+    if (rank == 0) {
         printf("%25s\t%s\n", "Matrix", mtxName.c_str());
         printf("%25s\t%d\n", "NumberOfProcesses", size);
         printf("%25s\t%d\n", "NumberOfThreads",  omp_get_max_threads());

@@ -1,6 +1,7 @@
 #include <vector>
 using namespace std;
 #define NUMBER_OF_LOOP_OF_SPMV      10
+#define NUMBER_OF_LOOP_OF_MEASURENT_SPMV      5
 #define NUMBER_OF_TIMING            20
 
 #define TIMING_TOTAL_SPMV                   0
