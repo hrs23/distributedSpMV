@@ -33,6 +33,13 @@ struct SparseMatrix {
     int *localIndexOfRecv;
     double *sendBuffer;
 
+    // for cache
+    int *denseInternalIdx;
+    int numberOfUniqInternalCols;
+#ifdef GPU
+    int *cuda_denseInternalIdx;
+#endif
+
 
 #ifdef GPU
     int *cuda_internalPtr;

@@ -53,6 +53,9 @@ int main (int argc, char *argv[]) {
     SparseMatrix A;
     Vector x, y;
     LoadInput(partFile, A, x);
+#ifdef USE_DENSE_INTERNAL_INDEX
+    CreateDenseInternalIdx(A, x);
+#endif
     CreateZeroVector(y, A.localNumberOfRows);
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     PERR("done\n");
@@ -105,8 +108,6 @@ int main (int argc, char *argv[]) {
         }
     }
     PERR("done\n");
-
-
 
     //------------------------------
     // Verify
@@ -187,6 +188,7 @@ int main (int argc, char *argv[]) {
     PrintHostName();
 #endif
 
+    PrintOption();
     if (rank == 0) {
         printf("%25s\t%s\n", "Matrix", mtxName.c_str());
         printf("%25s\t%d\n", "NumberOfProcesses", size);

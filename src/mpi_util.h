@@ -10,6 +10,8 @@ using namespace std;
 
 void PrintHostName ();
 void LoadInput (const string &partFile, SparseMatrix &A, Vector &x);
+
+void CreateDenseInternalIdx (SparseMatrix &A, Vector &x);
 void CreateZeroVector (Vector &x, int length);
 void PrintResult (SparseMatrix &A, Vector &y);
 bool VerifySpMV (const string &mtxFile, const SparseMatrix &A, const Vector &y);
@@ -19,3 +21,5 @@ void DeleteVector (Vector & x);
 
 double GetSynchronizedTime ();
 void SelectDevice();
+
+void PrintOption();

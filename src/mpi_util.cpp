@@ -228,6 +228,7 @@ bool VerifySpMV (const string &mtxFile, const SparseMatrix &A, const Vector &y) 
     displs[0] = 0;
     for (int i = 0; i < size; i++) displs[i+1] = displs[i] + recvCount[i];
     MPI_Allgatherv(localReorderedResult, A.localNumberOfRows, MPI_DOUBLE, unorderedResult, recvCount, displs, MPI_DOUBLE, MPI_COMM_WORLD);
+    if (rank != 0) return true;
     double *result = new double[A.globalNumberOfRows];
     int *index = new int[size];
     memset(index, 0, size * sizeof(int));
@@ -269,6 +270,38 @@ bool VerifySpMV (const string &mtxFile, const SparseMatrix &A, const Vector &y) 
     return res;
 }
 
+// Create new buffer for internal idx to increase cache hit rate
+void CreateDenseInternalIdx (SparseMatrix &A, Vector &x) {
+    set<int> usedCols;
+    for (int i = 0; i < A.internalPtr[A.localNumberOfRows]; i++) {
+        usedCols.insert(A.internalIdx[i]);
+    }
+    x.denseInternalValues = new double[usedCols.size()];
+    int p = 0;
+    map<int, int> internalToUsed;
+    map<int, int> usedToInternal;
+    for (auto c : usedCols) {
+        internalToUsed[c] = p;
+        usedToInternal[p] = c;
+        p++;
+    }
+    
+    for (int i = 0; i < p; i++) {
+        x.denseInternalValues[i] = x.values[usedToInternal[i]];
+    }
+    A.denseInternalIdx = new int[A.localNumberOfNonzeros];
+    int idx = 0;
+    for (int i = 0; i < A.internalPtr[A.localNumberOfRows]; i++) {
+        int c = A.internalIdx[i];
+        A.denseInternalIdx[i] = internalToUsed[c];
+    }
+#ifdef GPU
+    int ip = A.internalPtr[A.localNumberOfRows];
+    checkCudaErrors(cudaMalloc((void**)&A.cuda_denseInternalIdx, ip * sizeof(int)));
+    checkCudaErrors(cudaMemcpy((void *)A.cuda_denseInternalIdx, A.denseInternalIdx, ip * sizeof(int), cudaMemcpyHostToDevice));
+#endif
+}
+
 
 void SelectDevice () {
     int rank;
@@ -292,3 +325,35 @@ void DeleteVector (Vector & x) {
 }
 
 
+void PrintOption () {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        printf("%25s\t", "Option");
+#ifdef CPU
+        printf("+CPU");
+#endif
+#ifdef MIC
+        printf("+MIC");
+#endif
+#ifdef GPU
+        printf("+GPU");
+#endif
+#ifdef USE_DENSE_INTERNAL_INDEX
+        printf("+USE_DENSE_INTERNAL_INDEX");
+#endif
+#ifdef PRINT_HOSTNAME
+        printf("+PRINT_HOSTNAME");
+#endif
+#ifdef PRINT_PERFORMANCE
+        printf("+PRINT_PERFORMANCE");
+#endif
+#ifdef PRINT_REAL_PERFORMANCE
+        printf("+PRINT_REAL_PERFORMANCE");
+#endif
+#ifdef PRINT_NUMABIND
+        printf("+PRINT_NUMABIND");
+#endif
+        printf("\n");
+    }
+}

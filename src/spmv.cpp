@@ -54,7 +54,11 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
     timingTemp[TIMING_REAL_INTERNAL_COMPUTATION] -= GetSynchronizedTime();
 #endif
     {
+#ifdef USE_DENSE_INTERNAL_INDEX
+        SpMVDenseInternal(A, x, y);
+#else
         SpMVInternal(A, x, y);
+#endif
     }
 #ifdef PRINT_REAL_PERFORMANCE
     timingTemp[TIMING_REAL_INTERNAL_COMPUTATION] += GetSynchronizedTime();
@@ -241,12 +245,22 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     nLoop = 1;
     while (GetSynchronizedTime() - begin < 1.0) {
         nLoop *= 2;
-        for (int l = 0; l < nLoop / 2; l++) SpMVInternal(A, x, y);
+        for (int l = 0; l < nLoop / 2; l++) {
+#ifdef USE_DENSE_INTERNAL_INDEX
+            SpMVDenseInternal(A, x, y);
+#else 
+            SpMVInternal(A, x, y);
+#endif
+        }
     }
     nLoop /= 2;
     elapsedTime = -GetSynchronizedTime();
     for (int l = 0; l < nLoop; l++) {
+#ifdef USE_DENSE_INTERNAL_INDEX
+        SpMVDenseInternal(A, x, y);
+#else 
         SpMVInternal(A, x, y);
+#endif
     }
     elapsedTime += GetSynchronizedTime();
     timingTemp[TIMING_INTERNAL_COMPUTATION] = elapsedTime / nLoop;
