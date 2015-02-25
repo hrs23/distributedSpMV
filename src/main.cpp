@@ -120,7 +120,7 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_INTERNAL_COMPUTATION]  = "InternalComputation";
     timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "ExternalComputation";
     timingDetail[TIMING_PACKING] = "Packing";
-    for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV/2; i++) {
+    for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
         SpMV_measurement_once(A, x, y);
         if (!i) {
             timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION];
@@ -179,7 +179,7 @@ int main (int argc, char *argv[]) {
     PrintHostName();
 #endif
 
-    if (rank == 0) {
+    if (rank == 63) {
         printf("%25s\t%s\n", "Matrix", mtxName.c_str());
         printf("%25s\t%d\n", "NumberOfProcesses", size);
         printf("%25s\t%d\n", "NumberOfThreads",  omp_get_max_threads());
