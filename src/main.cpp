@@ -71,7 +71,6 @@ int main (int argc, char *argv[]) {
             nLoop *= 2;
             for (int l = 0; l < nLoop / 2; l++) SpMV(A, x, y);
         }
-        nLoop /= 2;
     }
 
     //------------------------------
@@ -79,14 +78,6 @@ int main (int argc, char *argv[]) {
     //------------------------------
     PERR("Computing SpMV ... ");
     timingDetail[TIMING_TOTAL_SPMV] = "TotalSpMV";
-#ifdef PRINT_REAL_PERFORMANCE
-    timingDetail[TIMING_REAL_PACKING] = "RealPacking";
-    timingDetail[TIMING_REAL_BEGIN_COMMUNICATION] = "RealBeginCommunication";
-    timingDetail[TIMING_REAL_INTERNAL_COMPUTATION] = "RealInternalComputation";
-    timingDetail[TIMING_REAL_EXTERNAL_COMPUTATION] = "RealExternalComputation";
-    timingDetail[TIMING_REAL_WAIT_COMMUNICATION] = "RealWaitCommunication";
-    timingDetail[TIMING_REAL_DELETE] = "RealDelete";
-#endif
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
         fill(timingTemp.begin(), timingTemp.end(), 0);
         double begin = GetSynchronizedTime();
@@ -97,14 +88,6 @@ int main (int argc, char *argv[]) {
         elapsedTime += GetSynchronizedTime();
         if (!i || timing[TIMING_TOTAL_SPMV] > elapsedTime / nLoop) {
             timing[TIMING_TOTAL_SPMV] = elapsedTime / nLoop;
-#ifdef PRINT_REAL_PERFORMANCE
-            timing[TIMING_REAL_PACKING] = timingTemp[TIMING_REAL_PACKING] / nLoop;
-            timing[TIMING_REAL_BEGIN_COMMUNICATION] = timingTemp[TIMING_REAL_BEGIN_COMMUNICATION] / nLoop;
-            timing[TIMING_REAL_INTERNAL_COMPUTATION] = timingTemp[TIMING_REAL_INTERNAL_COMPUTATION] / nLoop;
-            timing[TIMING_REAL_EXTERNAL_COMPUTATION] = timingTemp[TIMING_REAL_EXTERNAL_COMPUTATION] / nLoop;
-            timing[TIMING_REAL_WAIT_COMMUNICATION] = timingTemp[TIMING_REAL_WAIT_COMMUNICATION] / nLoop;
-            timing[TIMING_REAL_DELETE] = timingTemp[TIMING_REAL_DELETE] / nLoop;
-#endif
         }
     }
     PERR("done\n");

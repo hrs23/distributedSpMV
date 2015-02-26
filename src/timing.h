@@ -5,12 +5,6 @@ using namespace std;
 #define NUMBER_OF_TIMING            20
 
 #define TIMING_TOTAL_SPMV                   0
-#define TIMING_REAL_PACKING                 1
-#define TIMING_REAL_BEGIN_COMMUNICATION     2
-#define TIMING_REAL_INTERNAL_COMPUTATION    3
-#define TIMING_REAL_EXTERNAL_COMPUTATION    4
-#define TIMING_REAL_WAIT_COMMUNICATION      5
-#define TIMING_REAL_DELETE                  6
 
 #define TIMING_TOTAL_COMMUNICATION          10
 #define TIMING_TOTAL_COMPUTATION            11
