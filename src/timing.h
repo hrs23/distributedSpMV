@@ -4,6 +4,10 @@ using namespace std;
 #define NUMBER_OF_LOOP_OF_MEASURENT_SPMV      5
 #define NUMBER_OF_TIMING            20
 
+#ifndef THRESHOLD_SECOND
+#define THRESHOLD_SECOND            1.0
+#endif
+
 #define TIMING_TOTAL_SPMV                   0
 
 #define TIMING_TOTAL_COMMUNICATION          10

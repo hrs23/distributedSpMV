@@ -90,7 +90,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     int nLoop;
     begin = GetSynchronizedTime();
     nLoop = 1;
-    while (GetSynchronizedTime() - begin < 1.0) {
+    while (GetSynchronizedTime() - begin < THRESHOLD_SECOND) {
         nLoop *= 2;
         for (int l = 0; l < nLoop / 2; l++) {
 #pragma omp parallel for
@@ -111,7 +111,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
 
     begin = GetSynchronizedTime();
     nLoop = 1;
-    while (GetSynchronizedTime() - begin < 1.0) {
+    while (GetSynchronizedTime() - begin < THRESHOLD_SECOND) {
         nLoop *= 2;
         for (int l = 0; l < nLoop / 2; l++) {
             const int MPI_MY_TAG = 141421356 + l;
@@ -199,7 +199,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     begin = GetSynchronizedTime();
     nLoop = 1;
-    while (GetSynchronizedTime() - begin < 1.0) {
+    while (GetSynchronizedTime() - begin < THRESHOLD_SECOND) {
         nLoop *= 2;
         for (int l = 0; l < nLoop / 2; l++) {
 #ifdef USE_DENSE_INTERNAL_INDEX
@@ -224,7 +224,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     begin = GetSynchronizedTime();
     nLoop = 1;
-    while (GetSynchronizedTime() - begin < 1.0) {
+    while (GetSynchronizedTime() - begin < THRESHOLD_SECOND) {
         nLoop *= 2;
         for (int l = 0; l < nLoop / 2; l++)  SpMVExternal(A, x, y);
     }

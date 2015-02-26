@@ -67,7 +67,7 @@ int main (int argc, char *argv[]) {
     int nLoop = 1;
     {
         double begin = GetSynchronizedTime();
-        while (GetSynchronizedTime() - begin < 1.0)  {
+        while (GetSynchronizedTime() - begin < THRESHOLD_SECOND)  {
             nLoop *= 2;
             for (int l = 0; l < nLoop / 2; l++) SpMV(A, x, y);
         }
@@ -186,6 +186,7 @@ int main (int argc, char *argv[]) {
         printf("%25s\t%d\n", "NumberOfNonzeros", A.globalNumberOfNonzeros);
 #ifdef PRINT_PERFORMANCE
         printf("%25s\t%.10lf\n", "GFLOPS", A.globalNumberOfNonzeros * 2 / timing[TIMING_TOTAL_SPMV] / 1e9);
+        printf("%25s\t%d\n", "nLoop", nLoop);
         for (int i = 0; i < NUMBER_OF_TIMING; i++) {
             if (timingDetail[i] != NULL) {
                 printf("%25s\t%.10lf\n", timingDetail[i], timing[i]);

@@ -43,7 +43,7 @@ $(SPMV_CPU) : $(spmv_objects_cpu)
 ########################################
 # SPMV MIC
 ########################################
-$(OBJECT_DIR)/%.o.mic : CXXFLAGS += -mmic -DMIC
+$(OBJECT_DIR)/%.o.mic : CXXFLAGS += -mmic -DMIC -DTHRESHOLD_SECOND=3.0
 $(OBJECT_DIR)/%.o.mic : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 $(SPMV_MIC) : CXXFLAGS += -mmic -mkl
