@@ -59,12 +59,12 @@ int main (int argc, char *argv[]) {
     CreateZeroVector(y, A.localNumberOfRows);
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     PERR("done\n");
-
     //------------------------------
     // SpMV (Count loop number)
     //------------------------------
 
     int nLoop = 1;
+
     {
         double begin = GetSynchronizedTime();
         while (GetSynchronizedTime() - begin < THRESHOLD_SECOND)  {
@@ -101,7 +101,6 @@ int main (int argc, char *argv[]) {
         MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
         PERR("done\n");
     }
-
     //------------------------------
     // SpMV_measure (Synchronous)
     //------------------------------

@@ -276,6 +276,7 @@ void CreateDenseInternalIdx (SparseMatrix &A, Vector &x) {
     for (int i = 0; i < A.internalPtr[A.localNumberOfRows]; i++) {
         usedCols.insert(A.internalIdx[i]);
     }
+    A.numberOfUniqInternalCols = usedCols.size();
     x.denseInternalValues = new double[usedCols.size()];
     int p = 0;
     map<int, int> internalToUsed;

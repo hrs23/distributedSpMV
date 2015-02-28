@@ -77,7 +77,7 @@ int SpMVDenseInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     double *cuda_x = A.cuda_x_values;
     double *cuda_y = A.cuda_y_values;
 
-    checkCudaErrors(cudaMemcpy((void *)cuda_x, xv, A.localNumberOfRows * sizeof(double), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy((void *)cuda_x, xv, A.numberOfUniqInternalCols * sizeof(double), cudaMemcpyHostToDevice));
     
     ::cusparseHandle_t cusparse;
     ::cusparseCreate(&cusparse);
