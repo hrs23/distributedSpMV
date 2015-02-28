@@ -96,11 +96,24 @@ int main (int argc, char *argv[]) {
     // Verify
     //------------------------------
     if (verify) {
+        fill(y.values, y.values + y.localLength, 0);
+        SpMV(A, x, y);
         PERR("Verifying ... ");
         VerifySpMV(mtxFile, A, y);
         MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
         PERR("done\n");
+
+        //------------------------------
+        // Print 
+        //------------------------------
+#ifdef PRINT_RESULT
+        PERR("Printing result ... ");
+        PrintResult(A, y);
+        MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
+        PERR("done\n");
+#endif
     }
+
     //------------------------------
     // SpMV_measure (Synchronous)
     //------------------------------
@@ -130,6 +143,8 @@ int main (int argc, char *argv[]) {
         }
     }
     PERR("done\n");
+
+    /*
     //------------------------------
     // DELETE
     //------------------------------
@@ -138,20 +153,6 @@ int main (int argc, char *argv[]) {
     DeleteVector(x);
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     PERR("done\n");
-    /*
-    //------------------------------
-    // Print 
-    //------------------------------
-    PERR("Printing result ... ");
-    PrintResult(A, y);
-    MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
-    PERR("done\n");
-    */
-
-    /*
-    //------------------------------
-    // DELETE
-    //------------------------------
     PERR("Deleting y ... ");
     DeleteVector(y);
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);

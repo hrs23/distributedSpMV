@@ -187,6 +187,7 @@ void LoadInput (const string &partFile, SparseMatrix &A, Vector &x) {
 
 void CreateZeroVector (Vector &v, int length) {
     v.values = new double[length];
+    v.localLength = length;
     fill(v.values, v.values + length, 0);
 }
 
@@ -354,6 +355,9 @@ void PrintOption () {
 #endif
 #ifdef PRINT_NUMABIND
         printf("+PRINT_NUMABIND");
+#endif
+#ifdef PRINT_RESULT
+        printf("+PRINT_RESULT");
 #endif
         printf("\n");
     }
