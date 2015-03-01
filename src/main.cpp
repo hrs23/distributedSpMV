@@ -11,7 +11,7 @@
 #include "util.h"
 #include "mpi_util.h"
 #include "timing.h"
-#ifdef NUMA_BIND
+#ifdef PRINT_NUMABIND
 #include "numa.h"
 #endif
 using namespace std;
@@ -37,6 +37,7 @@ int main (int argc, char *argv[]) {
     string partName = argv[1];
     string mtxName = GetBasename(argv[1]);
     MPI_Init(&argc, &argv);
+
     //------------------------------
     // INIT
     //------------------------------
@@ -59,12 +60,11 @@ int main (int argc, char *argv[]) {
     CreateZeroVector(y, A.localNumberOfRows);
     MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
     PERR("done\n");
+
     //------------------------------
     // SpMV (Count loop number)
     //------------------------------
-
     int nLoop = 1;
-
     {
         double begin = GetSynchronizedTime();
         while (GetSynchronizedTime() - begin < THRESHOLD_SECOND)  {
@@ -117,7 +117,6 @@ int main (int argc, char *argv[]) {
     //------------------------------
     // SpMV_measure (Synchronous)
     //------------------------------
-
     PERR("Computing SpMV_measurement_once ... ");
     timingDetail[TIMING_TOTAL_COMMUNICATION] = "TotalCommunication";
     timingDetail[TIMING_TOTAL_COMPUTATION]  = "TotalComputation";
@@ -159,9 +158,6 @@ int main (int argc, char *argv[]) {
     PERR("done\n");
     */
 
-
-
-
     //------------------------------
     // REPORT
     //------------------------------
@@ -176,7 +172,7 @@ int main (int argc, char *argv[]) {
         printf("%25s\t%s\n", "Matrix", mtxName.c_str());
         printf("%25s\t%d\n", "NumberOfProcesses", size);
         printf("%25s\t%d\n", "NumberOfThreads",  omp_get_max_threads());
-#ifdef NUMA_BIND
+#ifdef PRINT_NUMABIND
         if (numa_available() != -1) {
             printf("%25s\t%d\n", "RunNodeBindMask", (int)*numa_get_run_node_mask()->maskp);
             printf("%25s\t%d\n", "MemBindMask", (int)*numa_get_membind()->maskp);
