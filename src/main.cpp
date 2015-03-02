@@ -80,11 +80,11 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_TOTAL_SPMV] = "TotalSpMV";
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
         fill(timingTemp.begin(), timingTemp.end(), 0);
-        double elapsedTime = -GetSynchronizedTime();
+        double elapsedTime = -GetBarrieredTime();
         for (int l = 0; l < nLoop; l++) {
             SpMV(A, x, y);
         }
-        elapsedTime += GetSynchronizedTime();
+        elapsedTime += GetBarrieredTime();
         if (!i || timing[TIMING_TOTAL_SPMV] > elapsedTime / nLoop) {
             timing[TIMING_TOTAL_SPMV] = elapsedTime / nLoop;
         }

@@ -97,12 +97,12 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
         }
         nLoop *= 2;
     }
-    elapsedTime = -GetSynchronizedTime();
+    elapsedTime = -GetBarrieredTime();
     for (int l = 0; l < nLoop; l++) {
 #pragma omp parallel for
         for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
     }
-    elapsedTime += GetSynchronizedTime();
+    elapsedTime += GetBarrieredTime();
     timingTemp[TIMING_PACKING] = elapsedTime / nLoop;
 
     //==============================
@@ -152,7 +152,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
         nLoop *= 2;
     }
 
-    elapsedTime = -GetSynchronizedTime();
+    elapsedTime = -GetBarrieredTime();
     for (int l = 0; l < nLoop ; l++) {
         const int MPI_MY_TAG = 141421356 + l;
         MPI_Request *recvRequests = new MPI_Request[A.numberOfRecvNeighbors];
@@ -191,7 +191,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
         delete [] sendStatuses;
     }
 
-    elapsedTime += GetSynchronizedTime();
+    elapsedTime += GetBarrieredTime();
     timingTemp[TIMING_TOTAL_COMMUNICATION] = elapsedTime / nLoop;
 
     //==============================
@@ -209,7 +209,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
         }
         nLoop *= 2;
     }
-    elapsedTime = -GetSynchronizedTime();
+    elapsedTime = -GetBarrieredTime();
     for (int l = 0; l < nLoop; l++) {
 #ifdef USE_DENSE_INTERNAL_INDEX
         SpMVDenseInternal(A, x, y);
@@ -217,7 +217,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
         SpMVInternal(A, x, y);
 #endif
     }
-    elapsedTime += GetSynchronizedTime();
+    elapsedTime += GetBarrieredTime();
     timingTemp[TIMING_INTERNAL_COMPUTATION] = elapsedTime / nLoop;
     //==============================
     // Compute External
@@ -228,11 +228,11 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
         for (int l = 0; l < nLoop; l++)  SpMVExternal(A, x, y);
         nLoop *= 2;
     }
-    elapsedTime = -GetSynchronizedTime();
+    elapsedTime = -GetBarrieredTime();
     for (int l = 0; l < nLoop; l++) {
         SpMVExternal(A, x, y);
     }
-    elapsedTime += GetSynchronizedTime();
+    elapsedTime += GetBarrieredTime();
     timingTemp[TIMING_EXTERNAL_COMPUTATION] = elapsedTime / nLoop;
     return 0;
 }

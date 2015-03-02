@@ -20,6 +20,7 @@ void DeleteSparseMatrix (SparseMatrix & A);
 void DeleteVector (Vector & x);
 
 double GetSynchronizedTime ();
+double GetBarrieredTime ();
 void SelectDevice();
 
 void PrintOption();

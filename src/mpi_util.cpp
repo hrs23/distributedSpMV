@@ -321,6 +321,12 @@ double GetSynchronizedTime () {
     return t;
 }
 
+double GetBarrieredTime () {
+    MPI_Barrier(MPI_COMM_WORLD);
+    double t = MPI_Wtime();
+    return t;
+}
+
 void DeleteSparseMatrix (SparseMatrix & A) {
 }
 void DeleteVector (Vector & x) {
