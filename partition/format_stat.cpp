@@ -22,11 +22,11 @@ int main (int argc, char *argv[]) {
         if (i) ifs.ignore();
         getline(ifs, line); 
         ifs >> key >> val; assert(key == "max");
-        printf("%d\t", val);
+        printf("%10d\t", val);
         ifs >> key >> val; assert(key == "min");
-        printf("%d\t", val);
+        printf("%10d\t", val);
         ifs >> key >> val; assert(key == "ave");
-        printf("%d\t", val);
+        printf("%10d\t", val);
     }
     puts("");
 }

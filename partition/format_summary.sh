@@ -4,6 +4,6 @@ for matrix in $matrices
 do
     for (( p=1; p<=64; p*=2)) 
     do  
-        ./format_stat simple/$matrix-$p.stat
+        ./format_stat hypergraph/$matrix-$p.stat
     done
 done

@@ -33,8 +33,8 @@ do
 #PBS -S /bin/bash
 #PBS -N SPMV-C$D$p
 #PBS -A NUMLIB
-#PBS -q comq
-#PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs:ompthreads=4
+#PBS -q tcag
+#PBS -l select=${N}:ncpus=$ncpus:mpiprocs=$mpiprocs:ompthreads=5
 #PBS -l walltime=03:00:00
 #PBS -l place=scatter
 #PBS -o pbs/
@@ -44,18 +44,19 @@ do
 module load intel/14.0.4 intelmpi/5.0.0 mkl/11.1.3
 
 cd $SPMV_DIR
+export OMP_NUM_THREADS=5
 
 MATRIX_DIR=${SPMV_DIR}/matrix/
 PARTITION_DIR=${SPMV_DIR}/partition/$DISTRIBUTE_METHOD/
 SPMV=${SPMV_DIR}/bin/spmv.cpu
-LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
+LOG=${SPMV_DIR}/log/cpu-$DISTRIBUTE_METHOD-tca-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 make bin/spmv.cpu
 
 matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 for matrix in \${matrices}
 do
-    mpirun -np ${p} -perhost ${mpiprocs} $SPMV_DIR/hapacs/numarun.sh \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
+    mpirun -np ${p} -perhost ${mpiprocs} $SPMV_DIR/script/hapacs/numarun.sh \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG
 done
     " > ${RUN_SCRIPT}
     chmod 700 ${RUN_SCRIPT}
