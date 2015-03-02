@@ -68,8 +68,8 @@ int main (int argc, char *argv[]) {
     {
         double begin = GetSynchronizedTime();
         while (GetSynchronizedTime() - begin < THRESHOLD_SECOND)  {
+            for (int l = 0; l < nLoop; l++) SpMV(A, x, y);
             nLoop *= 2;
-            for (int l = 0; l < nLoop / 2; l++) SpMV(A, x, y);
         }
     }
 
