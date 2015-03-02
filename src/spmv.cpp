@@ -36,16 +36,6 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
         sendBuffer += nSend;
     }
     //==============================
-    // Compute Internal
-    //==============================
-    {
-#ifdef USE_DENSE_INTERNAL_INDEX
-        SpMVDenseInternal(A, x, y);
-#else
-        SpMVInternal(A, x, y);
-#endif
-    }
-    //==============================
     // Wait Asynchronous Communication
     //==============================
     MPI_Status *recvStatuses = new MPI_Status[A.numberOfRecvNeighbors];
@@ -55,13 +45,6 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
             std::exit(-1);
         }
     }
-    //==============================
-    // Compute External
-    //==============================
-    {
-        SpMVExternal(A, x, y);
-    }
-
     //==============================
     // Wait Asynchronous Communication
     //==============================
@@ -76,6 +59,23 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
     delete [] sendRequests;
     delete [] recvStatuses;
     delete [] sendStatuses;
+    //==============================
+    // Compute Internal
+    //==============================
+    {
+#ifdef USE_DENSE_INTERNAL_INDEX
+        SpMVDenseInternal(A, x, y);
+#else
+        SpMVInternal(A, x, y);
+#endif
+    }
+    //==============================
+    // Compute External
+    //==============================
+    {
+        SpMVExternal(A, x, y);
+    }
+
     return 0;
 
 }
