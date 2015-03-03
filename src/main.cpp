@@ -184,7 +184,11 @@ int main (int argc, char *argv[]) {
     if (rank == 0) {
         printf("%25s\t%s\n", "Matrix", mtxName.c_str());
         printf("%25s\t%d\n", "NumberOfProcesses", size);
-        printf("%25s\t%d\n", "NumberOfThreads",  omp_get_max_threads());
+#pragma omp parallel 
+        {
+#pragma omp master
+        printf("%25s\t%d\n", "NumberOfThreads",  omp_get_num_threads());
+        }
 #ifdef PRINT_NUMABIND
         if (numa_available() != -1) {
             printf("%25s\t%d\n", "RunNodeBindMask", (int)*numa_get_run_node_mask()->maskp);
