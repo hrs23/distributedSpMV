@@ -68,7 +68,13 @@ int main (int argc, char *argv[]) {
     {
         double begin = GetSynchronizedTime();
         while (GetSynchronizedTime() - begin < THRESHOLD_SECOND)  {
-            for (int l = 0; l < nLoop; l++) SpMV(A, x, y);
+            for (int l = 0; l < nLoop; l++) {
+#ifdef SPMV_OVERLAP
+                SpMV_overlap(A, x, y);
+#else
+                SpMV(A, x, y);
+#endif
+            }
             nLoop *= 2;
         }
     }
@@ -82,7 +88,11 @@ int main (int argc, char *argv[]) {
         fill(timingTemp.begin(), timingTemp.end(), 0);
         double elapsedTime = -GetBarrieredTime();
         for (int l = 0; l < nLoop; l++) {
-            SpMV(A, x, y);
+#ifdef SPMV_OVERLAP
+                SpMV_overlap(A, x, y);
+#else
+                SpMV(A, x, y);
+#endif
         }
         elapsedTime += GetBarrieredTime();
         if (!i || timing[TIMING_TOTAL_SPMV] > elapsedTime / nLoop) {
@@ -96,7 +106,11 @@ int main (int argc, char *argv[]) {
     //------------------------------
     if (verify) {
         fill(y.values, y.values + y.localLength, 0);
-        SpMV(A, x, y);
+#ifdef SPMV_OVERLAP
+                SpMV_overlap(A, x, y);
+#else
+                SpMV(A, x, y);
+#endif
         PERR("Verifying ... ");
         VerifySpMV(mtxFile, A, y);
         MPI_Barrier(MPI_COMM_WORLD); fflush(stderr); fflush(stdout);
