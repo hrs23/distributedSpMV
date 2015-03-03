@@ -74,7 +74,7 @@ int main (int argc, char *argv[]) {
     }
 
     //------------------------------
-    // SpMV (Asynchronous)
+    // SpMV (Overlap)
     //------------------------------
     PERR("Computing SpMV ... ");
     timingDetail[TIMING_TOTAL_SPMV] = "TotalSpMV";
@@ -114,7 +114,7 @@ int main (int argc, char *argv[]) {
     }
 
     //------------------------------
-    // SpMV_measure (Synchronous)
+    // SpMV_measure (No overlap)
     //------------------------------
     PERR("Computing SpMV_measurement_once ... ");
     timingDetail[TIMING_TOTAL_COMMUNICATION] = "TotalCommunication";
