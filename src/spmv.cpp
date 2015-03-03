@@ -180,7 +180,7 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     timingTemp[TIMING_PACKING] = elapsedTime / nLoop;
 
     //==============================
-    // Begin synchronouse communication
+    // Begin asynchronouse communication
     //==============================
 
     begin = GetSynchronizedTime();
