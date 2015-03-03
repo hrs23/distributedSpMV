@@ -79,6 +79,80 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
     return 0;
 
 }
+
+
+int SpMV_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
+    //==============================
+    // Packing
+    //==============================
+    double *xv = x.values;
+    double *sendBuffer = A.sendBuffer;
+#pragma omp parallel for
+    for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
+    //==============================
+    // Begin Asynchronouse Communication
+    //==============================
+    const int MPI_MY_TAG = 141421356;
+    MPI_Request *recvRequests = new MPI_Request[A.numberOfRecvNeighbors];
+    MPI_Request *sendRequests = new MPI_Request[A.numberOfSendNeighbors];
+    double *x_external = (double *) xv + A.localNumberOfRows;
+    for (int i = 0; i < A.numberOfRecvNeighbors; i++) {
+        int nRecv = A.recvLength[i];
+        int src = A.recvNeighbors[i];
+        MPI_Irecv(x_external, nRecv, MPI_DOUBLE, src, MPI_MY_TAG, MPI_COMM_WORLD, &recvRequests[i]);
+        x_external += nRecv;
+    }
+    for (int i = 0; i < A.numberOfSendNeighbors; i++) {
+        int nSend = A.sendLength[i];
+        int dst = A.sendNeighbors[i];
+        MPI_Isend(sendBuffer, nSend, MPI_DOUBLE, dst, MPI_MY_TAG, MPI_COMM_WORLD, &sendRequests[i]);
+        sendBuffer += nSend;
+    }
+    //==============================
+    // Wait Asynchronous Communication
+    //==============================
+    MPI_Status *recvStatuses = new MPI_Status[A.numberOfRecvNeighbors];
+    if (A.numberOfRecvNeighbors) {
+        if (MPI_Waitall(A.numberOfRecvNeighbors, recvRequests, recvStatuses)) {
+            std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+            std::exit(-1);
+        }
+    }
+    //==============================
+    // Wait Asynchronous Communication
+    //==============================
+    MPI_Status *sendStatuses = new MPI_Status[A.numberOfSendNeighbors];
+    if (A.numberOfSendNeighbors) {
+        if (MPI_Waitall(A.numberOfSendNeighbors, sendRequests, sendStatuses)) {
+            std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+            std::exit(-1);
+        }
+    }
+    delete [] recvRequests;
+    delete [] sendRequests;
+    delete [] recvStatuses;
+    delete [] sendStatuses;
+    //==============================
+    // Compute Internal
+    //==============================
+    {
+#ifdef USE_DENSE_INTERNAL_INDEX
+        SpMVDenseInternal(A, x, y);
+#else
+        SpMVInternal(A, x, y);
+#endif
+    }
+    //==============================
+    // Compute External
+    //==============================
+    {
+        SpMVExternal(A, x, y);
+    }
+    return 0;
+}
+
+
+
 int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
     double* const xv = x.values;
     double *sendBuffer = A.sendBuffer;

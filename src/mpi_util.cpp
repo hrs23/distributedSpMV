@@ -365,6 +365,9 @@ void PrintOption () {
 #ifdef PRINT_RESULT
         printf("+PRINT_RESULT");
 #endif
+#ifdef SPMV_OVERLAP
+        printf("+SPMV_OVERLAP");
+#endif
         printf("\n");
     }
 }
