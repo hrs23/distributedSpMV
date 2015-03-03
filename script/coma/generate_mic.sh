@@ -48,7 +48,7 @@ make bin/spmv.mic
 export MIC_PPN=1
 export I_MPI_MIC=enable
 export KMP_AFFINITY=compact
-export OMP_NUM_THREADS=122
+export MIC_OMP_NUM_THREADS=244
 
 matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
 pdcp -w \$SLURM_JOB_NODELIST -R ssh $SPMV_DIR/bin/spmv.mic /mic-work/\$USER

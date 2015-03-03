@@ -72,7 +72,7 @@ int main (int argc, char *argv[]) {
 #ifdef SPMV_OVERLAP
                 SpMV_overlap(A, x, y);
 #else
-                SpMV(A, x, y);
+                SpMV_no_overlap(A, x, y);
 #endif
             }
             nLoop *= 2;
@@ -91,7 +91,7 @@ int main (int argc, char *argv[]) {
 #ifdef SPMV_OVERLAP
                 SpMV_overlap(A, x, y);
 #else
-                SpMV(A, x, y);
+                SpMV_no_overlap(A, x, y);
 #endif
         }
         elapsedTime += GetBarrieredTime();
@@ -109,7 +109,7 @@ int main (int argc, char *argv[]) {
 #ifdef SPMV_OVERLAP
                 SpMV_overlap(A, x, y);
 #else
-                SpMV(A, x, y);
+                SpMV_no_overlap(A, x, y);
 #endif
         PERR("Verifying ... ");
         VerifySpMV(mtxFile, A, y);

@@ -8,7 +8,7 @@
 #include "mpi_util.h"
 #include "timing.h"
 using namespace std;
-int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
+/*int SpMV_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     // Packing
     //==============================
@@ -79,9 +79,10 @@ int SpMV (const SparseMatrix &A, Vector &x, Vector &y) {
     return 0;
 
 }
+*/
 
 
-int SpMV_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
+int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     // Packing
     //==============================
