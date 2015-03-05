@@ -52,6 +52,7 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
 }
 
 
+/*
 int SpMVDenseInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     double *xv = x.denseInternalValues;
     double *yv = y.values;
@@ -89,6 +90,7 @@ int SpMVDenseInternal (const SparseMatrix & A, Vector & x, Vector & y) {
 #endif
     return 0;
 }
+*/
 
 
 int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {

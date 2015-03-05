@@ -136,6 +136,7 @@ int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     // Compute Internal
     //==============================
+
     {
 #ifdef USE_DENSE_INTERNAL_INDEX
         SpMVDenseInternal(A, x, y);

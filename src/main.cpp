@@ -64,34 +64,35 @@ int main (int argc, char *argv[]) {
     //------------------------------
     // SpMV (Count loop number)
     //------------------------------
-    int nLoop = 1;
-    {
-        double begin = GetSynchronizedTime();
-        while (GetSynchronizedTime() - begin < THRESHOLD_SECOND)  {
-            for (int l = 0; l < nLoop; l++) {
-#ifdef SPMV_OVERLAP
-                SpMV_overlap(A, x, y);
-#else
-                SpMV_no_overlap(A, x, y);
-#endif
-            }
-            nLoop *= 2;
-        }
-    }
 
     //------------------------------
     // SpMV (Overlap)
     //------------------------------
     PERR("Computing SpMV ... ");
     timingDetail[TIMING_TOTAL_SPMV] = "TotalSpMV";
+    int nLoop;
     for (int i = 0; i < NUMBER_OF_LOOP_OF_SPMV; i++) {
+        nLoop = 1;
+        {
+            double begin = GetSynchronizedTime();
+            while (GetSynchronizedTime() - begin < THRESHOLD_SECOND)  {
+                for (int l = 0; l < nLoop; l++) {
+#ifdef SPMV_OVERLAP
+                    SpMV_overlap(A, x, y);
+#else
+                    SpMV_no_overlap(A, x, y);
+#endif
+                }
+                nLoop *= 2;
+            }
+        }
         fill(timingTemp.begin(), timingTemp.end(), 0);
         double elapsedTime = -GetBarrieredTime();
         for (int l = 0; l < nLoop; l++) {
 #ifdef SPMV_OVERLAP
-                SpMV_overlap(A, x, y);
+            SpMV_overlap(A, x, y);
 #else
-                SpMV_no_overlap(A, x, y);
+            SpMV_no_overlap(A, x, y);
 #endif
         }
         elapsedTime += GetBarrieredTime();
@@ -107,9 +108,9 @@ int main (int argc, char *argv[]) {
     if (verify) {
         fill(y.values, y.values + y.localLength, 0);
 #ifdef SPMV_OVERLAP
-                SpMV_overlap(A, x, y);
+        SpMV_overlap(A, x, y);
 #else
-                SpMV_no_overlap(A, x, y);
+        SpMV_no_overlap(A, x, y);
 #endif
         PERR("Verifying ... ");
         VerifySpMV(mtxFile, A, y);
@@ -187,7 +188,7 @@ int main (int argc, char *argv[]) {
 #pragma omp parallel 
         {
 #pragma omp master
-        printf("%25s\t%d\n", "NumberOfThreads",  omp_get_num_threads());
+            printf("%25s\t%d\n", "NumberOfThreads",  omp_get_num_threads());
         }
 #ifdef PRINT_NUMABIND
         if (numa_available() != -1) {
