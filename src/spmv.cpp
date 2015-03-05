@@ -51,7 +51,7 @@ using namespace std;
     MPI_Status *recvStatuses = new MPI_Status[A.numberOfRecvNeighbors];
     if (A.numberOfRecvNeighbors) {
         if (MPI_Waitall(A.numberOfRecvNeighbors, recvRequests, recvStatuses)) {
-            std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+            std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
             std::exit(-1);
         }
     }
@@ -68,7 +68,7 @@ using namespace std;
     MPI_Status *sendStatuses = new MPI_Status[A.numberOfSendNeighbors];
     if (A.numberOfSendNeighbors) {
         if (MPI_Waitall(A.numberOfSendNeighbors, sendRequests, sendStatuses)) {
-            std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+            std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
             std::exit(-1);
         }
     }
@@ -115,7 +115,7 @@ int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     MPI_Status *recvStatuses = new MPI_Status[A.numberOfRecvNeighbors];
     if (A.numberOfRecvNeighbors) {
         if (MPI_Waitall(A.numberOfRecvNeighbors, recvRequests, recvStatuses)) {
-            std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+            std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
             std::exit(-1);
         }
     }
@@ -125,7 +125,7 @@ int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     MPI_Status *sendStatuses = new MPI_Status[A.numberOfSendNeighbors];
     if (A.numberOfSendNeighbors) {
         if (MPI_Waitall(A.numberOfSendNeighbors, sendRequests, sendStatuses)) {
-            std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+            std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
             std::exit(-1);
         }
     }
@@ -209,14 +209,14 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
             MPI_Status *recvStatuses = new MPI_Status[A.numberOfRecvNeighbors];
             if (A.numberOfRecvNeighbors) {
                 if (MPI_Waitall(A.numberOfRecvNeighbors, recvRequests, recvStatuses)) {
-                    std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+                    std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
                     std::exit(-1);
                 }
             }
             MPI_Status *sendStatuses = new MPI_Status[A.numberOfSendNeighbors];
             if (A.numberOfSendNeighbors) {
                 if (MPI_Waitall(A.numberOfSendNeighbors, sendRequests, sendStatuses)) {
-                    std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+                    std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
                     std::exit(-1);
                 }
             }
@@ -250,14 +250,14 @@ int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {
         MPI_Status *recvStatuses = new MPI_Status[A.numberOfRecvNeighbors];
         if (A.numberOfRecvNeighbors) {
             if (MPI_Waitall(A.numberOfRecvNeighbors, recvRequests, recvStatuses)) {
-                std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+                std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
                 std::exit(-1);
             }
         }
         MPI_Status *sendStatuses = new MPI_Status[A.numberOfSendNeighbors];
         if (A.numberOfSendNeighbors) {
             if (MPI_Waitall(A.numberOfSendNeighbors, sendRequests, sendStatuses)) {
-                std::cerr << "exit in SpMV.hpp:" << __LINE__ << std::endl;
+                std::cerr << "exit in " << __FILE__ << ":" << __LINE__ << std::endl;
                 std::exit(-1);
             }
         }
