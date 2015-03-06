@@ -3,8 +3,8 @@
 #include <mpi.h>
 using namespace std;
 int rank, size;
-const int dataSize = 1;
-const int nIteration = 1;
+const int dataSize = 1000;
+const int nIteration = 10;
 
 
 void comm (double *sendBuffer, double *recvBuffer) {
@@ -113,7 +113,7 @@ int main (int argc, char **argv) {
             totalTime = min(totalTime, elapsedTime / nLoop);
         }
     }
-    printf("%.5lf\t%.5lf\t%.5lf\n", commTime, calcTime, totalTime);
+    if (rank == 0) printf("%.5lf\t%.5lf\t%.5lf\n", commTime, calcTime, totalTime);
     /*for (int i = 0; i < dataSize * size; i++) {
         if (rank == 0) printf("%d\t%.1lf\n", i, result[i]);
     }*/

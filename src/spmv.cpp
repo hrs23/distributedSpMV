@@ -93,7 +93,6 @@ int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     // Begin Asynchronouse Communication
     //==============================
-    MPI_Barrier(MPI_COMM_WORLD);
     const int MPI_MY_TAG = 141421356;
     MPI_Request *recvRequests = new MPI_Request[A.numberOfRecvNeighbors];
     MPI_Request *sendRequests = new MPI_Request[A.numberOfSendNeighbors];
@@ -137,8 +136,6 @@ int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     // Compute Internal
     //==============================
-
-#pragma omp barrier
     {
 #ifdef USE_DENSE_INTERNAL_INDEX
         SpMVDenseInternal(A, x, y);
@@ -149,7 +146,6 @@ int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     // Compute External
     //==============================
-#pragma omp barrier
     {
         SpMVExternal(A, x, y);
     }

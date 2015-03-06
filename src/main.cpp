@@ -86,7 +86,6 @@ int main (int argc, char *argv[]) {
                 nLoop *= 2;
             }
         }
-        fill(timingTemp.begin(), timingTemp.end(), 0);
         double elapsedTime = -GetBarrieredTime();
         for (int l = 0; l < nLoop; l++) {
 #ifdef SPMV_OVERLAP
@@ -138,6 +137,7 @@ int main (int argc, char *argv[]) {
     timingDetail[TIMING_EXTERNAL_COMPUTATION]  = "ExternalComputation";
     timingDetail[TIMING_PACKING] = "Packing";
     for (int i = 0; i < NUMBER_OF_LOOP_OF_MEASURENT_SPMV; i++) {
+        fill(timingTemp.begin(), timingTemp.end(), 0);
         SpMV_measurement_once(A, x, y);
         if (!i) {
             timing[TIMING_TOTAL_COMMUNICATION] = timingTemp[TIMING_TOTAL_COMMUNICATION];
