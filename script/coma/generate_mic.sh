@@ -43,7 +43,7 @@ SPMV=${SPMV_DIR}/bin/spmv
 LOG=${SPMV_DIR}/log/mic-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
-module load intel/15.0.0 intelmpi/5.0.1 mkl/11.1.2
+module load intel/15.0.2 intelmpi/5.0.3 mkl/11.2.2
 make bin/spmv.mic
 export MIC_PPN=1
 export I_MPI_MIC=enable
