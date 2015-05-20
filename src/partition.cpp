@@ -13,6 +13,7 @@
 #include "util.h"
 #include "patoh.h"
 using namespace std;
+#define PATOH_SEED 19
 
 void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
 void GetSimplePartitioning (int nPart, int nCell, int nNet, int nConst, int *weights, int *costs, int *xpins, int *pins, int *idx2part);
@@ -94,6 +95,7 @@ void GetHypergraphPartitioning (int nPart, int nCell, int nNet, int nConst, int 
     PaToH_Parameters params;
     PaToH_Initialize_Parameters(&params, PATOH_CONPART, PATOH_SUGPARAM_DEFAULT);
     params._k = nPart;
+    params.seed = PATOH_SEED;
     PaToH_Alloc(&params, nCell, nNet, nConst, weights, costs, xpins, pins);
     
     int *partweights = new int[params._k * nConst];
