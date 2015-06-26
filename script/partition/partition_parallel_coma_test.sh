@@ -18,7 +18,7 @@ fi
 module load intel/15.0.2 intelmpi/5.0.3 mkl/11.2.2
 
 #MATRIX_DIR=$SPMV_DIR/matrix/tmp/
-MATRIX_DIR=$SPMV_DIR/matrix/
+MATRIX_DIR=$SPMV_DIR/matrix/test/
 cd $SPMV_DIR
 make bin/partition
 
@@ -28,8 +28,8 @@ for matrix in $matrices
 do
     for ((npart=1; npart <= 64; npart *= 2))
     do
-        tasks+="$SPMV_DIR/bin/partition $MATRIX_DIR/$matrix simple $npart $SPMV_DIR/partition/simple/\n"
-        tasks+="$SPMV_DIR/bin/partition $MATRIX_DIR/$matrix hypergraph $npart $SPMV_DIR/partition/hypergraph/\n"
+        tasks+="$SPMV_DIR/bin/partition $MATRIX_DIR/$matrix simple $npart $SPMV_DIR/partition/test/simple/\n"
+        tasks+="$SPMV_DIR/bin/partition $MATRIX_DIR/$matrix hypergraph $npart $SPMV_DIR/partition/test/hypergraph/\n"
     done
 done
 echo -e $tasks | xargs -P 0 -I@ -t sh -c "eval @"

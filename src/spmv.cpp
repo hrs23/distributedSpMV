@@ -8,13 +8,14 @@
 #include "mpi_util.h"
 #include "timing.h"
 using namespace std;
-/*int SpMV_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
+int SpMV_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     //==============================
     // Packing
     //==============================
     double *xv = x.values;
     double *sendBuffer = A.sendBuffer;
 #pragma omp parallel for
+//#pragma ivdep
     for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
     //==============================
     // Begin Asynchronouse Communication
@@ -79,7 +80,6 @@ using namespace std;
     return 0;
 
 }
-*/
 
 
 int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
@@ -89,6 +89,7 @@ int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     double *xv = x.values;
     double *sendBuffer = A.sendBuffer;
 #pragma omp parallel for
+//#pragma ivdep
     for (int i = 0; i < A.totalNumberOfSend; i++) sendBuffer[i] = xv[A.localIndexOfSend[i]];
     //==============================
     // Begin Asynchronouse Communication
@@ -151,7 +152,6 @@ int SpMV_no_overlap (const SparseMatrix &A, Vector &x, Vector &y) {
     }
     return 0;
 }
-
 
 
 int SpMV_measurement_once (const SparseMatrix &A, Vector &x, Vector &y) {

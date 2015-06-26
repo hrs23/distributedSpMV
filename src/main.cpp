@@ -184,6 +184,7 @@ int main (int argc, char *argv[]) {
     PrintOption();
     if (rank == 0) {
         printf("%25s\t%s\n", "Matrix", mtxName.c_str());
+        printf("%25s\t%s\n", "Part", partName.c_str());
         printf("%25s\t%d\n", "NumberOfProcesses", size);
 #pragma omp parallel 
         {

@@ -13,6 +13,15 @@
 #include <helper_cuda.h>
 #endif
 using namespace std;
+
+void my_dcsrmv (int nRow, int *ptr, int *idx, double *val, double *xv, double *yv) {
+    for (int i = 0; i < nRow; i++) {
+        for (int j = ptr[i]; j < ptr[i+1]; j++) {
+            yv[idx[j]] += val[j] * xv[idx[j]];
+        }
+    }
+}
+
 int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     double *xv = x.values;
     double *yv = y.values;
@@ -29,7 +38,11 @@ int SpMVInternal (const SparseMatrix & A, Vector & x, Vector & y) {
     MKL_INT *ptr_e = ptr_b + 1;
     char transa = 'N';
     char *matdescra = "GLNC";
+#ifndef MY_CSRMV
     mkl_dcsrmv(&transa, &nRow, &nRow, &ALPHA, matdescra, val, idx, ptr_b, ptr_e, xv, &BETA, yv);
+#else
+    my_dcsrmv(nRow, ptr, idx, val, xv, yv);
+#endif
 #endif
 #ifdef GPU
     int *cuda_ptr = A.cuda_internalPtr;
@@ -134,3 +147,4 @@ int SpMVExternal (const SparseMatrix & A, Vector & x, Vector & y) {
 #endif
     return 0;
 }
+
