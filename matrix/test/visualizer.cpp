@@ -5,7 +5,7 @@
 #include <cassert>
 #include <cmath>
 using namespace std;
-const int MAX_SIZE = 30;
+const int MAX_SIZE = 32;
 int main () {
     string line;
     do {

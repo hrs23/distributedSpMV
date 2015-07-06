@@ -38,12 +38,13 @@ SPMV=${SPMV_DIR}/bin/spmv.cpu
 LOG=${SPMV_DIR}/log/test/cpu-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
+module purge
 module load intel/15.0.2 intelmpi/5.0.3 mkl/11.2.2
 make bin/spmv.cpu
 export OMP_NUM_THREADS=10
 export KMP_AFFINITY=compact
 echo "SLURM_JOB_ID = "\$SLURM_JOB_ID > \$LOG
-matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
+matrices=\`ls \${MATRIX_DIR}/*-$p.mtx | xargs -i basename {}\`
 for matrix in \${matrices}
 do
     #mpirun -np ${p} numactl --localalloc \$SPMV \$PARTITION_DIR/\$matrix >> \$LOG

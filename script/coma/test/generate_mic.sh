@@ -44,6 +44,7 @@ SPMV_MIC=${SPMV_DIR}/bin/spmv.mic
 LOG=${SPMV_DIR}/log/test/mic-$DISTRIBUTE_METHOD-p$p-\`date +%y-%m-%d\`.tsv
 echo "" > \$LOG
 cd $SPMV_DIR
+module purge
 module load intel/15.0.2 intelmpi/5.0.3 mkl/11.2.2
 make bin/spmv.mic
 export MIC_PPN=1
@@ -51,10 +52,10 @@ export I_MPI_MIC=enable
 export KMP_AFFINITY=compact
 export MIC_OMP_NUM_THREADS=244
 echo \"SLURM_JOB_ID = \"\$SLURM_JOB_ID > \$LOG
-matrices=\`ls \${MATRIX_DIR}/*.mtx | xargs -i basename {}\`
+matrices=\`ls \${MATRIX_DIR}/*-$p.mtx | xargs -i basename {}\`
 for matrix in \${matrices}
 do
-    mpirun $SPMV_DIR/script/coma/copy-part.sh \$matrix $DISTRIBUTE_METHOD
+    #mpirun $SPMV_DIR/script/coma/copy-part.sh \$matrix $DISTRIBUTE_METHOD
     /opt/slurm/default/local/bin/$MPIRUN_MIC -m \"\$SPMV_MIC \$PARTITION_DIR/\$matrix\" >> \$LOG
 done
     " > ${RUN_SCRIPT}

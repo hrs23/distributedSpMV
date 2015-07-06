@@ -32,4 +32,5 @@ do
         tasks+="$SPMV_DIR/bin/partition $MATRIX_DIR/$matrix hypergraph $npart $SPMV_DIR/partition/test/hypergraph/\n"
     done
 done
-echo -e $tasks | xargs -P 0 -I@ -t sh -c "eval @"
+# "-P 0" means using full core
+echo -e $tasks | xargs -P 4 -I@ -t sh -c "eval @"

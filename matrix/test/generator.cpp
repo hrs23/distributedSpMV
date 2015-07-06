@@ -76,12 +76,14 @@ void print_matrix (int N, M m) {
 
 int main (int argc, char* argv[]) {
     int N = 10000;
+    int nProc = 64;
     if (argc <= 1) {
         printf("Usage: %s <type> [size]\n", argv[0]);
         exit(1);
     }
-    if (argc == 3) N = atoi(argv[2]);
-    if (strcmp(argv[1], "band") == 0) print_matrix(N, band_matrix(N, 64));
+    if (argc >= 3) N = atoi(argv[2]);
+    if (argc >= 4) nProc = atoi(argv[3]);
+    if (strcmp(argv[1], "band") == 0) print_matrix(N, band_matrix(N, nProc));
     else if (strcmp(argv[1], "dense") == 0) print_matrix(N, dense_matrix(N));
     else if (strcmp(argv[1], "unbalance") == 0) print_matrix(N, unbalance_matrix(N));
     else if (strcmp(argv[1], "random_unbalance") == 0) print_matrix(N, random_unbalance_matrix(N));
